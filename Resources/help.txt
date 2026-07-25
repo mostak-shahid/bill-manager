@@ -1,0 +1,387 @@
+1. Start the plugin using the code below in plugins folder
+wp scaffold plugin bill-manager
+
+1.1. Update the main plugin file
+------------------------------------------------------------------------------------------------------------------
+2.0. You can modify your composer.json file from the command line (CMD) using the composer config command.Run the following commands one by one in your terminal:cmd:: Set basic package information
+composer config name "mospress/bill-manager"
+composer config description "A modern WordPress Bill Manager plugin."
+composer config type "wordpress-plugin"
+composer config license "GPLv2"
+composer config minimum-stability "stable"
+
+2.1. php version works better
+php -r '
+$oldFile = "composer.json";
+$oldData = file_exists($oldFile) ? json_decode(file_get_contents($oldFile), true) : [];
+
+$newData = [
+    "name" => "mospress/bill-manager",
+    "description" => "A modern WordPress Bill Manager plugin.",
+    "type" => "wordpress-plugin",
+    "license" => "GPLv2",
+    "autoload" => [
+        "psr-4" => [
+            "MosPress\\BillManager\\" => "includes/"
+        ]
+    ],
+    "authors" => [
+        [
+            "name" => "Md. Mostak Shahid",
+            "email" => "mostak.shahid@gmail.com"
+        ]
+    ],
+    "minimum-stability" => "stable"
+];
+
+// Merges arrays while keeping new data at the top and preserving existing data
+$mergedData = $newData + $oldData;
+
+file_put_contents($oldFile, json_encode($mergedData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+'
+------------------------------------------------------------------------------------------------------------------
+OR delete the composer file and start with a new one
+composer init --name="mospress/bill-manager" --description="A modern WordPress Bill Manager plugin." --type="wordpress-plugin" --license="GPLv2" --stability="stable" --author="Md. Mostak Shahid <mostak.shahid@gmail.com>" --autoload="psr-4:MosPress\\\\BillManager\\\\:includes/" --require-dev="wp-cli/i18n-command:^2" --require-dev="wp-cli/wp-cli:^2.12" --require-dev="dealerdirect/phpcodesniffer-composer-installer:^1.2" --require-dev="wp-coding-standards/wpcs:^3.3" --no-interaction
+
+------------------------------------------------------------------------------------------------------------------
+3.0. composer require dealerdirect/phpcodesniffer-composer-installer --dev
+if want any permission allow it
+
+3.1. composer require wp-cli/wp-cli --dev
+3.2. composer require wp-cli/i18n-command --dev
+3.3. composer require wp-coding-standards/wpcs --dev -W
+------------------------------------------------------------------------------------------------------------------
+4.1. npm init 
+4.2. npm install @wordpress/scripts --save-dev
+4.3. Modify package.json
+```
+{
+  "name": "bill-manager",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^32.2.0"
+  }
+}
+```
+
+
+"scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "plugin-zip": "wp-scripts plugin-zip",
+    "makepot": "wp i18n make-pot . languages/bill-manager.pot --skip-js --exclude=src,vendor,node_modules --merge=languages/js.pot",
+}
+------------------------------------------------------------------------------------------------------------------
+5.1. npm install react-bootstrap bootstrap
+5.2. import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+
+Update Npm packages
+
+npm install -g npm-check-updates
+ncu -u
+npm install
+
+
+composer global require afragen/wp-devops
+
+
+wp package install wp-cli/dist-archive-command:@stable
+wp dist-archive wp-content/plugins/bill-manager bill-manager-v1.0.0.zip --plugin-dirname=bill-manager --filename-format='{slug}-{version}.zip'
+
+
+Final: go to the plugin folder
+# Clean vendor directory
+rm -rf vendor
+
+# Install prod-only dependencies
+composer install --no-dev --optimize-autoloader
+
+# Create the distribution zip
+rm -f composer.lock && rm -rf vendor && composer install --no-dev && composer dump-autoload -o
+wp dist-archive .
+
+
+
+
+
+svn
+----------------------------------------------------------------------------------------------------------------------------
+Your plugin **bill-manager** is hosted on the official WordPress.org repo:
+
+🔗 [https://wordpress.org/plugins/bill-manager/](https://wordpress.org/plugins/bill-manager/)
+
+That means you're using the standard WordPress SVN structure:
+
+```
+/trunk
+/tags
+/assets
+```
+
+Below is the **exact SVN workflow**, including **which directory to run each command from**.
+
+---
+
+# ✅ STANDARD WORDPRESS SVN RELEASE WORKFLOW
+
+Assuming your working copy root is:
+
+```
+bill-manager/
+```
+
+That folder contains:
+
+```
+.svn/
+assets/
+tags/
+trunk/
+```
+
+Everything below happens inside that root folder unless specified.
+
+---
+
+# 🟢 STEP 1 — Go To Plugin Root
+
+Run:
+
+```bash
+cd path/to/bill-manager
+```
+
+This is the folder that contains:
+
+```
+trunk/
+tags/
+assets/
+.svn/
+```
+
+---
+
+# 🟢 STEP 2 — Update From WordPress SVN
+
+Always update first:
+
+```bash
+svn update
+```
+
+📍 Run this in:
+
+```
+bill-manager/
+```
+
+---
+
+# 🟢 STEP 3 — Make Your Changes In trunk/
+
+All development changes go inside:
+
+```
+bill-manager/trunk/
+```
+
+* Update plugin version in:
+
+  * `trunk/bill-manager.php`
+  * `trunk/readme.txt`
+
+Example:
+
+```
+Stable tag: 1.0.2
+Version: 1.0.2
+```
+
+---
+
+# 🟢 STEP 4 — Check What Changed
+
+From root:
+
+```bash
+svn status
+```
+
+You’ll see:
+
+```
+M trunk/some-file.php
+? trunk/new-file.php
+```
+
+---
+
+# 🟢 STEP 5 — Add New Files (If Any)
+
+If `svn status` shows `?` files:
+
+```bash
+svn add trunk/new-file.php
+```
+
+Or add everything new inside trunk:
+
+```bash
+svn add trunk/* --force
+```
+
+📍 Run from root folder.
+
+---
+
+# 🟢 STEP 6 — Create New Tag
+
+Let’s say you're releasing:
+
+```
+1.0.2
+```
+
+Copy trunk to tags:
+
+```bash
+svn copy trunk tags/1.0.2
+```
+
+📍 Run from:
+
+```
+bill-manager/
+```
+
+This creates:
+
+```
+tags/1.0.2/
+```
+
+---
+
+# 🟢 STEP 7 — Add Tag Files (If Needed)
+
+If svn status shows new files inside the tag:
+
+```bash
+svn add tags/1.0.2 --force
+```
+
+Usually not needed if you copied correctly.
+
+---
+
+# 🟢 STEP 8 — Commit Everything
+
+From root:
+
+```bash
+svn commit -m "Release version 1.0.2"
+```
+
+📍 Run from:
+
+```
+bill-manager/
+```
+
+You’ll be prompted for your WordPress.org username & password.
+
+---
+
+# 🟢 STEP 9 — If You Changed Plugin Banners or Icons
+
+Assets folder is separate from trunk.
+
+If you modified:
+
+```
+assets/banner-772x250.png
+assets/icon-256x256.png
+```
+
+Then:
+
+```bash
+svn status
+svn add assets/* --force
+svn commit -m "Update plugin assets"
+```
+
+---
+
+# 🔵 COMPLETE RELEASE COMMAND SEQUENCE (COPY-PASTE SAFE)
+
+```bash
+cd path/to/bill-manager
+
+svn update
+
+svn status
+
+svn add trunk/* --force
+
+svn copy trunk tags/1.0.2
+
+svn commit -m "Release version 1.0.2"
+```
+
+---
+
+# 🟣 OPTIONAL: CLEAN WAY (PRO METHOD)
+
+If you want a cleaner workflow:
+
+```
+Development → trunk
+Release → tag
+Never edit inside tags manually
+```
+
+Only copy trunk to tag when releasing.
+
+---
+
+# 🚨 IMPORTANT CHECKLIST BEFORE COMMIT
+
+✔ Version updated in main plugin file
+✔ Stable tag updated in readme.txt
+✔ No debug code
+✔ No node_modules
+✔ No .map files unless required
+✔ No duplicate `.png.png` files (I noticed you have some)
+
+---
+
+# 🧠 If You Ever Need Fresh Checkout
+
+If something breaks:
+
+```bash
+svn checkout https://plugins.svn.wordpress.org/bill-manager/ bill-manager
+```
+
+Run this outside the current folder.
+
+---
+
+If you'd like, I can also give you:
+
+* 🔥 Automated bash release script
+* 🔥 Git → SVN deployment workflow
+* 🔥 How to use GitHub Actions to auto-deploy to WordPress SVN
+
+Just tell me your preferred workflow.

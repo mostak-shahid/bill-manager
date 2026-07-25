@@ -1,0 +1,12 @@
+.bill-manager-vertical-navbar {
+    width: 280px;
+    min-height: 100vh;
+    .vertical-menu-parent {
+        cursor: pointer;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s ease;
+    }
+}

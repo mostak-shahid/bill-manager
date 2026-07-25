@@ -1,0 +1,88 @@
+.bill-manager-navbar.bill-manager-horizontal-navbar .nav-link {
+  display: flex;
+  align-items: center;
+}
+.bill-manager-navbar.bill-manager-horizontal-navbar .multi-level-dropdown {
+  position: relative;
+}
+.bill-manager-navbar.bill-manager-horizontal-navbar .dropdown-submenu .dropdown-toggle::after {
+  float: right;
+  margin-top: 10px;
+}
+.bill-manager-navbar.bill-manager-horizontal-navbar .header-icon-menu button {
+  padding: 0 !important;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+.bill-manager-navbar.bill-manager-horizontal-navbar .header-icon-menu button svg {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+.bill-manager-navbar.bill-manager-horizontal-navbar {
+  /* =====================================
+             Desktop
+          ===================================== */
+}
+@media (min-width: 992px) {
+  .bill-manager-navbar.bill-manager-horizontal-navbar .dropdown-submenu > .dropdown-menu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+  }
+}
+.bill-manager-navbar.bill-manager-horizontal-navbar {
+  /* =====================================
+             Mobile / Tablet
+          ===================================== */
+}
+@media (max-width: 991px) {
+  .bill-manager-navbar.bill-manager-horizontal-navbar .dropdown-submenu > .dropdown-menu {
+    position: static !important;
+    transform: none !important;
+    margin-left: 15px;
+    border: none;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .bill-manager-navbar.bill-manager-horizontal-navbar .dropdown-menu {
+    width: 100%;
+  }
+}
+.bill-manager-navbar.bill-manager-vertical-navbar .vertical-menu-parent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.bill-manager-navbar a:focus {
+  box-shadow: none;
+  border-radius: 0;
+}
+.bill-manager-navbar .dropdown-menu[data-bs-popper] {
+  margin-top: 0;
+  margin-left: 0;
+  padding: 0;
+}
+.bill-manager-navbar .dropdown-menu .dropdown-item,
+.bill-manager-navbar .dropdown-menu .dropdown-toggle {
+  padding: 0.5rem;
+}
+.bill-manager-navbar .current,
+.bill-manager-navbar .active {
+  background-color: var(--wp-active-color);
+  color: #fff !important;
+}
+.bill-manager-navbar .nav-link .nav-icon {
+  display: inline-block;
+  margin-right: 5px;
+}
+.bill-manager-navbar .nav-link.current .bill-manager-navbar .nav-link.active {
+  background-color: var(--wp-active-color);
+  color: #fff !important;
+}
+.bill-manager-navbar .wp-has-current-submenu > .dropdown > .nav-link, .bill-manager-navbar .wp-has-current-submenu > .dropdown-submenu > .nav-link {
+  background-color: var(--wp-active-color);
+  color: #fff !important;
+}/*# sourceMappingURL=Menu.css.map */

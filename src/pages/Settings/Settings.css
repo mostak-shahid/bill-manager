@@ -1,0 +1,12 @@
+.settings-page-layout .sidebar-left,
+.settings-page-layout .sidebar-right {
+  width: 100%;
+  max-width: 250px;
+  display: none;
+}
+@media (min-width: 992px) {
+  .settings-page-layout .sidebar-left,
+  .settings-page-layout .sidebar-right {
+    display: block;
+  }
+}/*# sourceMappingURL=Settings.css.map */

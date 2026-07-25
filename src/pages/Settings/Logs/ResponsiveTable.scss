@@ -1,0 +1,69 @@
+$background-color_1: #f9f9f9;
+
+/* --- Desktop Default Configuration --- */
+/* --- Breakpoint: Medium Screens (1279px and below) --- */
+/* --- Breakpoint: Medium Screens (959px and below) --- */
+/* --- Breakpoint: Small Screens (599px and below) --- */
+/* Targets both header and body cells using the custom class pointer */
+/* Expanded Detail Section Styling */
+.responsive-table-wrapper {
+    .show-on-lg,
+    .show-on-md,
+    .show-on-sm,
+    .rdt_rightPinSpacer {
+        display: none;
+    }
+
+    .expanded-row-container {
+        padding: 15px 24px;
+        background-color: $background-color_1;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1279px) {
+        .hide-column-lg {
+            display: none !important;
+        }
+
+        .show-on-lg {
+            display: block;
+            margin: 4px 0;
+        }
+    }
+
+    @media (max-width: 959px) {
+        .hide-column-md {
+            display: none !important;
+        }
+
+        .show-on-md {
+            display: block;
+            margin: 4px 0;
+        }
+    }
+
+    @media (max-width: 599px) {
+        .rdt_TableCol {
+            &:has(.hide-column-sm) {
+                display: none !important;
+            }
+        }
+
+        .rdt_TableCell {
+            &:has(.hide-column-sm) {
+                display: none !important;
+            }
+        }
+
+        .hide-column-sm {
+            display: none !important;
+        }
+
+        .show-on-sm {
+            display: block;
+            margin: 4px 0;
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "bill-manager",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "plugin-zip": "wp-scripts plugin-zip",
+    "makepot": "wp i18n make-pot . languages/bill-manager.pot --skip-js --exclude=src,vendor,node_modules --merge=languages/js.pot",
+    "postinstall": "composer install"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^19.2.4",
+    "css-loader": "^7.1.2",
+    "file-loader": "^6.2.0",
+    "sass": "^1.84.0",
+    "sass-loader": "^16.0.4",
+    "style-loader": "^4.0.0"
+  },
+  "dependencies": {
+    "@visactor/react-vchart": "^2.1.1",
+    "bootstrap": "^5.3.8",
+    "react-bootstrap": "^2.10.10",
+    "react-data-table-component": "^8.3.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-icons": "^5.7.0",
+    "react-router-dom": "^7.11.0"
+  }
+}

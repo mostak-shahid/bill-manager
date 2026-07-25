@@ -1,0 +1,68 @@
+# Create 10 log entries (default)
+wp bill-manager seed_logs
+
+# Create 50 log entries
+wp bill-manager seed_logs --count=50
+
+# Create 100 log entries
+wp bill-manager seed_logs --count=100
+
+# Create logs with specific user ID
+wp bill-manager seed_logs --count=20 --user-id=5
+
+# Create logs with custom IP
+wp bill-manager seed_logs --count=30 --ip=192.168.1.100
+
+# Combine all options
+wp bill-manager seed_logs --count=50 --user-id=2 --ip=127.0.0.1
+
+# Show 10 recent logs
+wp bill-manager show_logs
+
+# Show 20 recent logs
+wp bill-manager show_logs --limit=20
+
+# Show 50 recent logs
+wp bill-manager show_logs --limit=50
+
+# Table format (default)
+wp bill-manager show_logs --format=table
+
+# JSON format
+wp bill-manager show_logs --format=json
+
+# CSV format
+wp bill-manager show_logs --format=csv
+
+# YAML format
+wp bill-manager show_logs --format=yaml
+
+# Show 25 logs in JSON format
+wp bill-manager show_logs --limit=25 --format=json
+
+# Clear logs (will ask for confirmation)
+wp bill-manager clear-logs
+
+# Step 1: Clear existing logs
+wp bill-manager clear-logs --yes
+
+# Step 2: Add 100 new test logs
+wp bill-manager seed_logs --count=100
+
+# Step 3: View the first 10 logs
+wp bill-manager show_logs --limit=10
+
+# Step 4: Export logs to JSON file
+wp bill-manager show_logs --limit=100 --format=json > logs.json
+
+# Add logs for user 1
+wp bill-manager seed_logs --count=10 --user-id=1
+
+# Add logs for user 2
+wp bill-manager seed_logs --count=10 --user-id=2
+
+# Add logs for user 3
+wp bill-manager seed_logs --count=10 --user-id=3
+
+# View all logs
+wp bill-manager show_logs --limit=30

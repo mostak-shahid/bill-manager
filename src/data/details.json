@@ -1,0 +1,8 @@
+{
+  "name": "Bill Manager",
+  "description": "A modern WordPress Bill Manager plugin.",
+  "version": "1.0.0",
+  "author": "Md. Mostak Shahid",
+  "authorURI": "https://mostak-shahid.github.io/",
+  "pluginURI": "https://mostak-shahid.github.io/bill-manager/"
+}

@@ -1,0 +1,330 @@
+:root {
+    --wp-active-color: #3858e9;
+}
+
+.bill-manager-settings-template {
+
+    #wpadminbar,
+    #adminmenuwrap {
+        z-index: 999;
+    }
+
+    #wpcontent {
+        padding-left: 0;
+
+        .card {
+            max-width: unset;
+            min-width: unset;
+            margin-top: 0;
+            padding: unset;
+        }
+    }
+
+    #wpbody-content {
+        padding-bottom: 0;
+    }
+
+    #wpfooter {
+        display: none;
+    }
+
+    ul#adminmenu a.wp-has-current-submenu:after,
+    ul#adminmenu>li.current>a.current:after {
+        border-right-color: var(--bs-body-bg);
+    }
+
+    .form-select,
+    .form-control {
+        border: var(--bs-border-width) solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+        background-color: transparent;
+        max-width: 100%;
+
+        &:hover {
+            border-color: var(--bs-border-color);
+        }
+
+        &:focus {
+            color: var(--bs-body-color);
+            background-color: var(--bs-body-bg);
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
+        }
+    }
+
+    .form-check {
+        .form-check-input {
+            margin: 0;
+            margin-top: 4px;
+            margin-left: -1.5em;
+        }
+    }
+
+    .form-switch {
+        .form-check-input {
+            background-color: transparent;
+            background-image: var(--bs-form-switch-bg);
+            border: var(--bs-border-width) solid var(--bs-border-color);
+            background-repeat: no-repeat;
+            outline: none;
+            box-shadow: none;
+            margin-left: -2.5em;
+
+            &:checked {
+                background-color: #0d6efd;
+                border-color: #0d6efd;
+
+                &::before {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .breadcrumb {
+        margin: 0;
+        padding: 0;
+
+        li.breadcrumb-item {
+            margin-bottom: 0;
+
+            a {
+                text-decoration: none;
+            }
+        }
+    }
+
+
+    /**
+    * Help Tip
+    */
+    .mp-help-tip {
+        color: #666;
+        display: inline-block;
+        font-size: 1.1em;
+        font-style: normal;
+        height: 16px;
+        line-height: 16px;
+        position: relative;
+        vertical-align: middle;
+        width: 16px;
+
+        &::after {
+            font-family: dashicons;
+            content: "\f223";
+            // @include icon_dashicons("\f223");
+            cursor: help;
+        }
+    }
+}
+
+.loading-skeleton {
+    background: linear-gradient(45deg, #e0e0e0 25%, #f8f8f8 50%, #e0e0e0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+
+    // border-radius: 4px;
+    // margin-bottom: 16px;
+    &.h1,
+    &.h2,
+    &.h3,
+    &.h4,
+    &.h5,
+    &.h6 {
+        margin-bottom: 10px;
+    }
+
+    &.h1 {
+        height: 40px;
+    }
+
+    &.h2 {
+        height: 33px;
+    }
+
+    &.h3 {
+        height: 26px;
+    }
+
+    &.h4 {
+        height: 19px;
+    }
+
+    &.h5 {
+        height: 15px;
+    }
+
+    &.h6 {
+        height: 13px;
+    }
+
+    &.p {
+        height: 20px;
+        margin-bottom: 10px;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.toplevel_page_bill-manager {
+    .wp-menu-image {
+        text-align: center;
+
+        img {
+            display: inline-block;
+        }
+    }
+}
+
+// 1. Spin (fa-spin)
+.fa-spin {
+    animation: fa-spin 2s infinite linear;
+    /* */
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+// 2. Spin Pulse (fa-spin-pulse)
+.fa-spin-pulse {
+    animation: fa-spin-pulse 1s infinite steps(8);
+}
+
+@keyframes fa-spin-pulse {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+// 3. Beat (fa-beat)
+.fa-beat {
+    animation: fa-beat 1s infinite ease-in-out;
+}
+
+@keyframes fa-beat {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.25);
+    }
+}
+
+// 4. Fade (fa-fade)
+.fa-fade {
+    animation: fa-fade 1s infinite linear;
+}
+
+@keyframes fa-fade {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+// 5. Beat-Fade (fa-beat-fade)
+.fa-beat-fade {
+    animation: fa-beat-fade 1s infinite ease-in-out;
+}
+
+@keyframes fa-beat-fade {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.125);
+        opacity: 0.4;
+    }
+}
+
+// 6. Bounce (fa-bounce)
+.fa-bounce {
+    animation: fa-bounce 1s infinite ease-in-out;
+}
+
+@keyframes fa-bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-0.25em);
+    }
+}
+
+// 7. Flip (fa-flip)
+.fa-flip {
+    animation: fa-flip 1s infinite ease-in-out;
+}
+
+@keyframes fa-flip {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    100% {
+        transform: rotateY(360deg);
+    }
+}
+
+// 8. Shake (fa-shake)
+.fa-shake {
+    animation: fa-shake 1s infinite ease-in-out;
+}
+
+@keyframes fa-shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-2px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(2px);
+    }
+}

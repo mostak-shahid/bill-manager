@@ -1,0 +1,37 @@
+.bill-manager-navbar .multi-level-dropdown {
+  position: relative;
+}
+.bill-manager-navbar .dropdown-submenu .dropdown-toggle::after {
+  float: right;
+  margin-top: 10px;
+}
+.bill-manager-navbar {
+  /* =====================================
+     Desktop
+  ===================================== */
+}
+@media (min-width: 992px) {
+  .bill-manager-navbar .dropdown-submenu > .dropdown-menu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+  }
+}
+.bill-manager-navbar {
+  /* =====================================
+     Mobile / Tablet
+  ===================================== */
+}
+@media (max-width: 991px) {
+  .bill-manager-navbar .dropdown-submenu > .dropdown-menu {
+    position: static !important;
+    transform: none !important;
+    margin-left: 15px;
+    border: none;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .bill-manager-navbar .dropdown-menu {
+    width: 100%;
+  }
+}/*# sourceMappingURL=HorizontalMultiLevelNavbar.css.map */

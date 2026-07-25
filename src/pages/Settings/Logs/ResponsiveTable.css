@@ -1,0 +1,52 @@
+/* --- Desktop Default Configuration --- */
+/* --- Breakpoint: Medium Screens (1279px and below) --- */
+/* --- Breakpoint: Medium Screens (959px and below) --- */
+/* --- Breakpoint: Small Screens (599px and below) --- */
+/* Targets both header and body cells using the custom class pointer */
+/* Expanded Detail Section Styling */
+.responsive-table-wrapper .show-on-lg,
+.responsive-table-wrapper .show-on-md,
+.responsive-table-wrapper .show-on-sm,
+.responsive-table-wrapper .rdt_rightPinSpacer {
+  display: none;
+}
+.responsive-table-wrapper .expanded-row-container {
+  padding: 15px 24px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (max-width: 1279px) {
+  .responsive-table-wrapper .hide-column-lg {
+    display: none !important;
+  }
+  .responsive-table-wrapper .show-on-lg {
+    display: block;
+    margin: 4px 0;
+  }
+}
+@media (max-width: 959px) {
+  .responsive-table-wrapper .hide-column-md {
+    display: none !important;
+  }
+  .responsive-table-wrapper .show-on-md {
+    display: block;
+    margin: 4px 0;
+  }
+}
+@media (max-width: 599px) {
+  .responsive-table-wrapper .rdt_TableCol:has(.hide-column-sm) {
+    display: none !important;
+  }
+  .responsive-table-wrapper .rdt_TableCell:has(.hide-column-sm) {
+    display: none !important;
+  }
+  .responsive-table-wrapper .hide-column-sm {
+    display: none !important;
+  }
+  .responsive-table-wrapper .show-on-sm {
+    display: block;
+    margin: 4px 0;
+  }
+}/*# sourceMappingURL=ResponsiveTable.css.map */

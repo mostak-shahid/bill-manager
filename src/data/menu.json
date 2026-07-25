@@ -1,0 +1,67 @@
+[    
+    { "itemKey": "inputs", "text": "Inputs", "url": "/settings/inputs/",
+        "items": [            
+            {
+                "itemKey": "basic_inputs",
+                "text": "Basic Inputs",
+                "description": "Basic input settings",
+                "url": "/settings/inputs/basic_inputs"
+            },
+            {
+                "itemKey": "array_inputs",
+                "text": "Array Inputs",
+                "description": "Array input settings",
+                "url": "/settings/inputs/array_inputs"
+            },
+            {
+                "itemKey": "complex_inputs",
+                "text": "Complex Inputs",
+                "description": "Complex input settings",
+                "url": "/settings/inputs/complex_inputs"
+            }
+        ] 
+    },
+    
+    { "itemKey": "utilities", "text": "Utilities", "url": "/settings/utilities/",
+        "items": [  
+            {
+                "itemKey": "import_export",
+                "text": "Import & Export",
+                "description": "Easily import or export plugin settings for backup, migration, or reuse.",
+                "url": "/settings/utilities/import_export"
+            },
+            {
+                "itemKey": "tools",
+                "text": "Tools",
+                "description": "Access helpful utilities for maintenance, debugging, and optimization.",
+                "url": "/settings/utilities/tools"
+            },
+            {
+                "itemKey": "logs",
+                "text": "Logs",
+                "description": "Review and manage plugin activity logs.",
+                "url": "/settings/utilities/logs",
+                "items": [
+                    {
+                        "itemKey": "table",
+                        "text": "Table",
+                        "description": "Browse detailed logs in a searchable table view.",
+                        "url": "/settings/utilities/logs/table"
+                    },
+                    {
+                        "itemKey": "analytics",
+                        "text": "Analytics",
+                        "description": "Analyze log data with charts and usage insights.",
+                        "url": "/settings/utilities/logs/analytics"
+                    }
+                ]
+            }
+        ] 
+    },
+    {
+        "itemKey": "feedback",
+        "text": "Feedback",
+        "description": "Share feedback, report issues, or suggest improvements.",
+        "url": "/feedback"
+    }
+]

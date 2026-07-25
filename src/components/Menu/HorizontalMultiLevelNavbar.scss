@@ -1,0 +1,58 @@
+.bill-manager-navbar {
+    .multi-level-dropdown {
+                    position: relative;
+                }
+
+                .dropdown-submenu .dropdown-toggle::after {
+                    float: right;
+                    margin-top: 10px;
+                }
+
+                /* =====================================
+                   Desktop
+                ===================================== */
+
+                @media (min-width: 992px) {
+
+                    .dropdown-submenu > .dropdown-menu {
+
+                        position: absolute;
+
+                        top: 0;
+
+                        left: 100%;
+
+                        margin-top: -1px;
+
+                    }
+
+                }
+
+                /* =====================================
+                   Mobile / Tablet
+                ===================================== */
+
+                @media (max-width: 991px) {
+
+                    .dropdown-submenu > .dropdown-menu {
+
+                        position: static !important;
+
+                        transform: none !important;
+
+                        margin-left: 15px;
+
+                        border: none;
+
+                        background: rgba(255,255,255,0.03);
+
+                    }
+
+                    .dropdown-menu {
+
+                        width: 100%;
+
+                    }
+
+                }
+}

@@ -1,0 +1,21 @@
+.bill-manager-media-uploader-unit {
+    .media-uploader {
+        width: 100%;
+        max-width: 300px;
+        .file-name {
+            cursor: pointer;
+            .remove-image-icon {
+                font-size: 24px;
+                top: -24px;
+                right: -24px;
+                cursor: pointer;
+            }
+            .uploaded-image-icon {
+                font-size: 50px;
+            }
+            &.file-name-without-image {
+                border-style: dashed!important;
+            }
+        }
+    }
+}

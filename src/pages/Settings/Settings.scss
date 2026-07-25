@@ -1,0 +1,11 @@
+.settings-page-layout {
+    .sidebar-left,
+    .sidebar-right {
+        width: 100%;
+        max-width: 250px;
+        display: none;
+        @media (min-width: 992px) {
+            display: block;
+        }
+    }
+}

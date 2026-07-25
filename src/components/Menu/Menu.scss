@@ -1,0 +1,130 @@
+.bill-manager-navbar {
+    &.bill-manager-horizontal-navbar {
+        .nav-link {
+            display: flex;
+            align-items: center;
+        }
+        .multi-level-dropdown {
+            position: relative;
+        }
+
+        .dropdown-submenu .dropdown-toggle::after {
+            float: right;
+            margin-top: 10px;
+        }
+        .header-icon-menu{
+            button {
+                padding: 0!important;
+                width: 32px;
+                height: 32px;
+                line-height: 32px;
+                svg {
+                    width: 16px;
+                    height: 16px;
+                    display: inline-block;
+                }
+            }
+        }
+
+        /* =====================================
+                   Desktop
+                ===================================== */
+
+        @media (min-width: 992px) {
+
+            .dropdown-submenu>.dropdown-menu {
+
+                position: absolute;
+
+                top: 0;
+
+                left: 100%;
+
+                margin-top: -1px;
+
+            }
+
+        }
+
+        /* =====================================
+                   Mobile / Tablet
+                ===================================== */
+
+        @media (max-width: 991px) {
+
+            .dropdown-submenu>.dropdown-menu {
+
+                position: static !important;
+
+                transform: none !important;
+
+                margin-left: 15px;
+
+                border: none;
+
+                background: rgba(255, 255, 255, 0.03);
+
+            }
+
+            .dropdown-menu {
+
+                width: 100%;
+
+            }
+
+        }
+    }
+    &.bill-manager-vertical-navbar {
+        .vertical-menu-parent {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+    }
+    a:focus {
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .dropdown-menu {
+        &[data-bs-popper] {
+            margin-top: 0;
+            margin-left: 0;
+            padding: 0;
+        }
+        .dropdown-item,
+        .dropdown-toggle {
+            padding: 0.5rem;
+        }
+    }
+
+
+    .current,
+    .active {
+        background-color: var(--wp-active-color);
+        color: #fff!important;
+    }
+    .nav-link {
+        .nav-icon {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        &.current
+        &.active {
+            background-color: var(--wp-active-color);
+            color: #fff!important;
+        }
+        
+    }
+    .wp-has-current-submenu {
+        & > .dropdown,
+        & > .dropdown-submenu {
+            & > .nav-link {
+                background-color: var(--wp-active-color);
+                color: #fff!important;
+            }
+        }
+    }
+    
+}
