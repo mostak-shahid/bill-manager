@@ -2,10 +2,18 @@
   "name": "mospress/bill-manager",
   "description": "A modern WordPress Bill Manager plugin.",
   "type": "wordpress-plugin",
-  "license": "GPLv2",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress"
+  ],
   "autoload": {
     "psr-4": {
       "MosPress\\BillManager\\": "includes/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MosPress\\BillManager\\Tests\\": "tests/"
     }
   },
   "authors": [
@@ -15,18 +23,22 @@
     }
   ],
   "minimum-stability": "stable",
+  "prefer-stable": true,
   "require-dev": {
     "wp-cli/wp-cli": "^2.0",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
     "wp-coding-standards/wpcs": "^3.1",
-    "wp-cli/i18n-command": "^2"
+    "wp-cli/i18n-command": "^2",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.5",
+    "squizlabs/php_codesniffer": "^3.13"
   },
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
   },
-
   "require": {},
   "scripts": {
     "makepot": "wp i18n make-pot ."

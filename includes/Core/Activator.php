@@ -103,6 +103,9 @@ class Activator
 		$companies_table = $wpdb->prefix . 'bill_manager_companies';
 		$companies_sql = "CREATE TABLE $companies_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			ip varchar(45) NOT NULL,
+			user_agent text NOT NULL,
 			title varchar(255) NOT NULL,
 			address text NOT NULL,
 			phone varchar(255) NOT NULL,
@@ -116,6 +119,9 @@ class Activator
 		$bills_table = $wpdb->prefix . 'bill_manager_bills';
 		$bills_sql = "CREATE TABLE $bills_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			ip varchar(45) NOT NULL,
+			user_agent text NOT NULL,
 			company_id bigint(20) NOT NULL,
 			total_amount bigint(20) NOT NULL,
 			bill_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -128,6 +134,9 @@ class Activator
 		$bill_items_table = $wpdb->prefix . 'bill_manager_bill_items';
 		$bill_items_sql = "CREATE TABLE $bill_items_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			ip varchar(45) NOT NULL,
+			user_agent text NOT NULL,
 			bill_id bigint(20) NOT NULL,
 			title varchar(255) NOT NULL,
 			quantity bigint(20) NOT NULL,
@@ -142,6 +151,9 @@ class Activator
 		$payments_table = $wpdb->prefix . 'bill_manager_payments';
 		$payments_sql = "CREATE TABLE $payments_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			ip varchar(45) NOT NULL,
+			user_agent text NOT NULL,
 			bill_id bigint(20) NOT NULL,
 			payment_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			paid_amount bigint(20) NOT NULL,
@@ -153,6 +165,5 @@ class Activator
 		dbDelta($payments_sql);
 	}
 }
-
 
 

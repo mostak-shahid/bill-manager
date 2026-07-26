@@ -1,6 +1,9 @@
 {
   "name": "bill-manager",
   "version": "1.0.0",
+  "description": "A modern WordPress Bill Manager plugin.",
+  "author": "Md. Mostak Shahid",
+  "license": "GPL-2.0-or-later",
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",
@@ -8,11 +11,13 @@
     "lint:css": "wp-scripts lint-style",
     "lint:js": "wp-scripts lint-js",
     "plugin-zip": "wp-scripts plugin-zip",
+    "packages-update": "wp-scripts packages-update",
     "makepot": "wp i18n make-pot . languages/bill-manager.pot --skip-js --exclude=src,vendor,node_modules --merge=languages/js.pot",
     "postinstall": "composer install"
   },
   "devDependencies": {
-    "@wordpress/scripts": "^19.2.4",
+    "@4c/tsconfig": "^0.4.1",
+    "@wordpress/scripts": "^33.0.0",
     "css-loader": "^7.1.2",
     "file-loader": "^6.2.0",
     "sass": "^1.84.0",
@@ -27,7 +32,10 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-icons": "^5.7.0",
-    "react-router-dom": "^7.11.0",
-    "uncontrollable": "^9.0.0"
-  }
+    "react-router-dom": "^7.15.1"
+  },
+  "overrides": {
+    "uncontrollable": "7.2.1"
+  },
+  "allowScripts": {}
 }

@@ -11,6 +11,7 @@ use WP_REST_Server;
 
 class LogsController
 {
+
     private $logs_table_name;
     public function __construct()
     {

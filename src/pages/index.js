@@ -1,6 +1,9 @@
 import Dashboard from './Dashboard/Dashboard';
 import Settings from './Settings/Settings';
+import Companies from './Settings/Companies';
+import SingleCompany from './Settings/SingleCompany';
 import BasicInputs from './Settings/BasicInputs';
+
 import ArrayInputs from './Settings/ArrayInputs';
 import ComplexInputs from './Settings/ComplexInputs';
 import ImportExport from './Settings/ImportExport';
@@ -25,6 +28,8 @@ import FullWidthRightSidebar from './Layouts/FullWidthRightSidebar';
 export {
     Dashboard,
     Settings,
+    Companies,
+    SingleCompany,
     BasicInputs,
     ArrayInputs,
     ComplexInputs,

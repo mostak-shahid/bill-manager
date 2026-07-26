@@ -1,6 +1,9 @@
 <?php
+
 namespace MosPress\BillManager\API;
-if ( ! defined( 'ABSPATH' ) ) exit;
+
+if (! defined('ABSPATH')) exit;
+
 use MosPress\BillManager\API\LogsController;
 use MosPress\BillManager\API\BillsController;
 use MosPress\BillManager\Helpers\Utils;
@@ -10,6 +13,7 @@ use WP_REST_Response;
 use WP_REST_Server;
 
 use MosPress\BillManager\Helpers\CryptoHelper;
+
 /**
  * Rest API Router
  *
@@ -17,7 +21,7 @@ use MosPress\BillManager\Helpers\CryptoHelper;
  */
 class Rest_API
 {
-    
+
     private const NAMESPACE = 'bill-manager/v1';
     private static $instance = null;
     /**
@@ -33,7 +37,7 @@ class Rest_API
         return self::$instance;
     }
     public function __construct()
-    {        
+    {
         add_action('rest_api_init', [$this, 'rest_api_init']);
     }
     public function rest_api_init()
@@ -50,49 +54,56 @@ class Rest_API
      * Register settings theme endpoints
      */
     private function register_settings_theme_endpoints()
-    {  
-		register_rest_route(self::NAMESPACE, '/set-settings-theme',
-			array(
-				'methods'  => 'GET',
-				'callback' => [$this, 'rest_set_settings_theme'],
-				'permission_callback' => function () {
+    {
+        register_rest_route(
+            self::NAMESPACE,
+            '/set-settings-theme',
+            array(
+                'methods'  => 'GET',
+                'callback' => [$this, 'rest_set_settings_theme'],
+                'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
                 'args' => [
                     'id' => [
                         'required' => true,
                         'type'     => 'string',
-                        'items'    => [ 'type' => 'integer' ],
+                        'items'    => ['type' => 'integer'],
                     ],
-                    
+
                     'settings_theme' => [
                         'required' => true,
                         'type'     => 'string',
-                        'enum'     => [ 'light', 'dark' ],
+                        'enum'     => ['light', 'dark'],
                     ],
                 ],
-			)
-		); 
-        register_rest_route(self::NAMESPACE, '/get-settings-theme',
-			array(
-				'methods'  => 'GET',
-				'callback' => [$this, 'rest_get_settings_theme'],
-				'permission_callback' => function () {
+            )
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/get-settings-theme',
+            array(
+                'methods'  => 'GET',
+                'callback' => [$this, 'rest_get_settings_theme'],
+                'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
-			)
-		);       
+            )
+        );
     }
 
     /**
      * Register feedback endpoints
      */
-    private function register_feedback_endpoints(){
-        register_rest_route(self::NAMESPACE, '/feedback',
+    private function register_feedback_endpoints()
+    {
+        register_rest_route(
+            self::NAMESPACE,
+            '/feedback',
             array(
                 'methods' => 'POST',
                 'callback' => [$this, 'rest_feedback'],
-				// 'permission_callback' => '__return_true'
+                // 'permission_callback' => '__return_true'
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -103,28 +114,35 @@ class Rest_API
     /**
      * Register options endpoints
      */
-    private function register_options_endpoints() {        
-		register_rest_route(self::NAMESPACE, '/options',
-			array(
-				'methods'  => 'GET',
-				'callback' => [$this, 'get_settings'],
-				// 'permission_callback' => '__return_true', // Allow public access
-				'permission_callback' => function () {
+    private function register_options_endpoints()
+    {
+        register_rest_route(
+            self::NAMESPACE,
+            '/options',
+            array(
+                'methods'  => 'GET',
+                'callback' => [$this, 'get_settings'],
+                // 'permission_callback' => '__return_true', // Allow public access
+                'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
-			)
-		);
-		register_rest_route(self::NAMESPACE, '/options',
-			array(
-				'methods'             => 'POST',
-				'callback'            => [$this, 'update_settings'],
-				// 'permission_callback' => '__return_true'
-				'permission_callback' => function () {
+            )
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/options',
+            array(
+                'methods'             => 'POST',
+                'callback'            => [$this, 'update_settings'],
+                // 'permission_callback' => '__return_true'
+                'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
-			)
-		);
-		register_rest_route(self::NAMESPACE, '/options/reset-settings',
+            )
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/options/reset-settings',
             array(
                 'methods' => 'POST',
                 'callback' => [$this, 'reset_settings'],
@@ -133,7 +151,9 @@ class Rest_API
                 },
             )
         );
-		register_rest_route(self::NAMESPACE, '/options/reset-settings-all',
+        register_rest_route(
+            self::NAMESPACE,
+            '/options/reset-settings-all',
             array(
                 'methods' => 'POST',
                 'callback' => [$this, 'reset_settings_all'],
@@ -141,8 +161,10 @@ class Rest_API
                     return current_user_can('manage_options');
                 },
             )
-        );        
-		register_rest_route(self::NAMESPACE, '/options/import-settings', 
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/options/import-settings',
             [
                 'methods' => 'POST',
                 'callback' => function ($request) {
@@ -156,32 +178,37 @@ class Rest_API
                 },
             ]
         );
-		register_rest_route(self::NAMESPACE, '/options-details',
-			array(
-				'methods'  => 'GET',
-				'callback' => [$this, 'get_settings_details'],
-				// 'permission_callback' => '__return_true', // Allow public access
-				'permission_callback' => function () {
+        register_rest_route(
+            self::NAMESPACE,
+            '/options-details',
+            array(
+                'methods'  => 'GET',
+                'callback' => [$this, 'get_settings_details'],
+                // 'permission_callback' => '__return_true', // Allow public access
+                'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
                 'args' => [
                     'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
                     'search' => ['sanitize_callback' => 'sanitize_text_field'],
                 ],
-			)
-		);
+            )
+        );
     }
 
     /**
      * Register logs endpoints
      */
-    private function register_logs_endpoints() {        
+    private function register_logs_endpoints()
+    {
         // Get logs with filters
-        register_rest_route( self::NAMESPACE, '/logs',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( LogsController::class, 'get_logs' ),
-                
+                'callback'            => array(LogsController::class, 'get_logs'),
+
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -199,10 +226,12 @@ class Rest_API
         );
 
         // Delete log by ID
-        register_rest_route( self::NAMESPACE, '/logs/(?P<id>\d+)',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/(?P<id>\d+)',
             array(
                 'methods'             => WP_REST_Server::DELETABLE,
-                'callback'            => array( LogsController::class, 'delete_log' ),                
+                'callback'            => array(LogsController::class, 'delete_log'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -216,10 +245,12 @@ class Rest_API
         );
 
         // Bulk Delete Logs
-        register_rest_route( self::NAMESPACE, '/logs/bulk-delete',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/bulk-delete',
             array(
                 'methods'             => WP_REST_Server::DELETABLE,
-                'callback'            => array( LogsController::class, 'bulk_delete_logs' ),
+                'callback'            => array(LogsController::class, 'bulk_delete_logs'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -227,17 +258,19 @@ class Rest_API
                     'ids' => array(
                         'required'          => true,
                         'type'     => 'array',
-                        'items'    => array( 'type' => 'integer' ),
+                        'items'    => array('type' => 'integer'),
                     ),
                 ),
             )
         );
 
         // Delete all logs
-        register_rest_route( self::NAMESPACE, '/logs/',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/',
             array(
                 'methods'             => WP_REST_Server::DELETABLE,
-                'callback'            => array( LogsController::class, 'delete_all_logs' ),                
+                'callback'            => array(LogsController::class, 'delete_all_logs'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -245,10 +278,12 @@ class Rest_API
         );
 
         // Logs Over Time Chart
-        register_rest_route( self::NAMESPACE,'/logs/stats/over-time',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/stats/over-time',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( LogsController::class, 'get_logs_over_time' ),                
+                'callback'            => array(LogsController::class, 'get_logs_over_time'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -256,10 +291,12 @@ class Rest_API
         );
 
         // Logs by Category Chart
-        register_rest_route( self::NAMESPACE,'/logs/stats/by-category',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/stats/by-category',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( LogsController::class, 'get_logs_by_category' ),                
+                'callback'            => array(LogsController::class, 'get_logs_by_category'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -267,10 +304,12 @@ class Rest_API
         );
 
         // Logs by User (Top Users) Chart
-        register_rest_route( self::NAMESPACE,'/logs/stats/top-users',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/stats/top-users',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( LogsController::class, 'get_logs_top_users' ),                
+                'callback'            => array(LogsController::class, 'get_logs_top_users'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -278,10 +317,12 @@ class Rest_API
         );
 
         // Logs by IP Address (Top IPs) Chart
-        register_rest_route( self::NAMESPACE,'/logs/stats/top-ips',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/stats/top-ips',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( LogsController::class, 'get_logs_top_ips' ),                
+                'callback'            => array(LogsController::class, 'get_logs_top_ips'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -289,10 +330,12 @@ class Rest_API
         );
 
         // Hourly Activity Chart
-        register_rest_route( self::NAMESPACE,'/logs/stats/hourly-activity',
+        register_rest_route(
+            self::NAMESPACE,
+            '/logs/stats/hourly-activity',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( LogsController::class, 'get_logs_hourly_activity' ),                
+                'callback'            => array(LogsController::class, 'get_logs_hourly_activity'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -302,13 +345,59 @@ class Rest_API
     /**
      * Register logs endpoints
      */
-    private function register_bills_endpoints() {      
-        // Get logs with filters
-        register_rest_route( self::NAMESPACE, '/bills',
+    private function register_bills_endpoints()
+    {
+        // Get companies with filters
+        register_rest_route(
+            self::NAMESPACE,
+            '/companies',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_companies'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args' => [
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            ]
+        );
+        // Get company bi ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/company/(?P<id>\d+)',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_company'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args' => [
+                    'id' => [
+                        'required'          => true,
+                        'validate_callback' => function ($param, $request, $key) {
+                            return is_numeric($param) && (int) $param > 0;
+                        },
+                        'sanitize_callback' => 'absint',
+                    ],
+                ],
+            ]
+        );
+        // Get bills with filters
+        register_rest_route(
+            self::NAMESPACE,
+            '/bills',
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( BillsController::class, 'get_bills' ),
-                
+                'callback'            => array(BillsController::class, 'get_bills'),
+
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -332,8 +421,8 @@ class Rest_API
         // $user_id = get_current_user_id();
         $settings_theme = sanitize_text_field(wp_unslash($request->get_param('settings_theme')));
         // get_user_meta($user_id, 'bill_manager_settings_theme', $settings_theme);
-        update_user_meta( $user_id, 'bill_manager_settings_theme', $settings_theme );
-                
+        update_user_meta($user_id, 'bill_manager_settings_theme', $settings_theme);
+
         $response = [
             'success' => true,
             'msg' => esc_html__('Theme set successfully.', 'bill-manager'),
@@ -346,7 +435,7 @@ class Rest_API
         $user_id = sanitize_text_field(wp_unslash($request->get_param('id')));
         $settings_theme = get_user_meta($user_id, 'bill_manager_settings_theme', true);
         // return $settings_theme??'light';
-        return $settings_theme?$settings_theme:'light';
+        return $settings_theme ? $settings_theme : 'light';
     }
 
     // callback for feedback endpoints	
@@ -388,18 +477,18 @@ class Rest_API
     }
 
     // callback for options enpoints    
-	public function get_settings(WP_REST_Request $request)
-	{
-		if (!current_user_can('manage_options')) {
-			return new WP_Error(
-				'rest_update_error',
-				'Sorry, you are not allowed to update the DAEXT UI Test options.',
-				array('status' => 403)
-			);
-		}
-		$bill_manager_options = Utils::bill_manager_get_option();
-		return new WP_REST_Response($bill_manager_options, 200);
-	}
+    public function get_settings(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+        $bill_manager_options = Utils::bill_manager_get_option();
+        return new WP_REST_Response($bill_manager_options, 200);
+    }
     public function get_settings_details(WP_REST_Request $request)
     {
         $bill_manager_options_details = Utils::bill_manager_get_option_details();
@@ -408,7 +497,7 @@ class Rest_API
         $search   = $request->get_param('search');
         $per_page = $request->get_param('per_page');
 
-        if ( ! empty( $search ) ) {
+        if (! empty($search)) {
             // 1. Flatten the option details
             $flat_details = $this->flatten_options_details($bill_manager_options_details);
 
@@ -444,49 +533,49 @@ class Rest_API
 
         return new WP_REST_Response($bill_manager_options_details, 200);
     }
-	public function update_settings(WP_REST_Request $request) //WP_REST_Request $request
-	{
-		if (!current_user_can('manage_options')) {
-			return new WP_Error(
-				'rest_update_error',
-				'Sorry, you are not allowed to update options.'.get_current_user_id(),
-				array('status' => 403)
-			);
-		}
-		$bill_manager_options_old = Utils::bill_manager_get_option();
+    public function update_settings(WP_REST_Request $request) //WP_REST_Request $request
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update options.' . get_current_user_id(),
+                array('status' => 403)
+            );
+        }
+        $bill_manager_options_old = Utils::bill_manager_get_option();
 
-		$bill_manager_options = map_deep(wp_unslash($request->get_param('bill_manager_options')), 'wp_kses_post');
+        $bill_manager_options = map_deep(wp_unslash($request->get_param('bill_manager_options')), 'wp_kses_post');
 
-		$bill_manager_options ? update_option('bill_manager_options', $bill_manager_options) : '';
+        $bill_manager_options ? update_option('bill_manager_options', $bill_manager_options) : '';
 
-		LogsController::log_settings_change($bill_manager_options_old, $bill_manager_options);
+        LogsController::log_settings_change($bill_manager_options_old, $bill_manager_options);
 
-		$response = [
-			'success' => true,
-			'msg'	=> esc_html__('Data successfully added.', 'bill-manager')
-		];
-		return new WP_REST_Response($response, 200);
-	}
+        $response = [
+            'success' => true,
+            'msg'    => esc_html__('Data successfully added.', 'bill-manager')
+        ];
+        return new WP_REST_Response($response, 200);
+    }
     private function reset_option_by_path(&$options, $defaults, $path)
-	{
-		$keys = explode('.', $path);
-		$target = &$options;
-		$default = $defaults;
+    {
+        $keys = explode('.', $path);
+        $target = &$options;
+        $default = $defaults;
 
-		foreach ($keys as $key) {
-			if (!isset($target[$key]) || !isset($default[$key])) {
-				return false; // path not found
-			}
-			$target = &$target[$key];
-			$default = $default[$key];
-		}
+        foreach ($keys as $key) {
+            if (!isset($target[$key]) || !isset($default[$key])) {
+                return false; // path not found
+            }
+            $target = &$target[$key];
+            $default = $default[$key];
+        }
 
-		// Set the value at the final nested level
-		$target = $default;
-		return true;
-	}
+        // Set the value at the final nested level
+        $target = $default;
+        return true;
+    }
     public function reset_settings(WP_REST_Request $request)
-	{
+    {
         if (!current_user_can('manage_options')) {
             return new WP_Error(
                 'rest_update_error',
@@ -500,7 +589,7 @@ class Rest_API
         $bill_manager_default_options = Utils::bill_manager_get_default_options();
 
         $success = $this->reset_option_by_path($bill_manager_options, $bill_manager_default_options, $name);
-        
+
         if ($success) {
             update_option('bill_manager_options', $bill_manager_options);
             LogsController::log_settings_change($bill_manager_options_old, $bill_manager_default_options, 'reset');
@@ -509,16 +598,16 @@ class Rest_API
             wp_send_json_error(['error_message' => __('Invalid settings path.', 'bill-manager')]);
         }
 
-		$response = [
-			'success' => true,
-			'msg'	=> esc_html__('Data successfully added.', 'bill-manager')
-		];
+        $response = [
+            'success' => true,
+            'msg'    => esc_html__('Data successfully added.', 'bill-manager')
+        ];
 
-		// return $response;
-		return new WP_REST_Response($response, 200);
-	}
+        // return $response;
+        return new WP_REST_Response($response, 200);
+    }
     public function reset_settings_all(WP_REST_Request $request)
-	{
+    {
         if (!current_user_can('manage_options')) {
             return new WP_Error(
                 'rest_update_error',
@@ -533,14 +622,14 @@ class Rest_API
         LogsController::log_settings_change($bill_manager_options_old, $bill_manager_default_options, 'reset-all');
         wp_send_json_success(['message' => __('Settings reset successfully.', 'bill-manager')]);
 
-		$response = [
-			'success' => true,
-			'msg'	=> esc_html__('Data successfully added.', 'bill-manager')
-		];
+        $response = [
+            'success' => true,
+            'msg'    => esc_html__('Data successfully added.', 'bill-manager')
+        ];
 
-		// return $response;
-		return new WP_REST_Response($response, 200);
-	}
+        // return $response;
+        return new WP_REST_Response($response, 200);
+    }
 
     /**
      * Recursively flattens nested option details into a single list of items.
@@ -565,5 +654,4 @@ class Rest_API
         }
         return $flat;
     }
-
 }

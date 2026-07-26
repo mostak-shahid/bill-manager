@@ -17,6 +17,97 @@ use WP_CLI;
 class CLI_Command {
 
     /**
+     * Seed the companies table with sample data.
+     *
+     * ## OPTIONS
+     *
+     * [--count=<number>]
+     * : Number of log entries to create. Default: 10
+     *
+     * ## EXAMPLES
+     *
+     *     # Create 10 log entries (default)
+     *     wp bill-manager seed_companies
+     *
+     *     # Create 50 log entries
+     *     wp bill-manager seed_companies --count=50
+     *
+     * @param array $args       Positional arguments.
+     * @param array $assoc_args Associative arguments.
+     */
+    public function seed_companies( $args, $assoc_args ) {
+        global $wpdb;
+
+        // Get parameters with defaults
+        $count = isset( $assoc_args['count'] ) ? absint( $assoc_args['count'] ) : 10;
+        
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+
+        // Check if table exists
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$companies_table}'" ) !== $companies_table ) {
+            WP_CLI::error( "Table {$companies_table} does not exist. Please activate the plugin first." );
+            return;
+        }
+
+        WP_CLI::log( "Starting to seed {$count} log entries..." );
+
+        $progress = \WP_CLI\Utils\make_progress_bar( 'Seeding companies', $count );
+
+        $inserted = 0;
+        $failed = 0;
+
+        for ( $i = 1; $i <= $count; $i++ ) {
+            // Generate random data for each log entry
+            $user_id = rand( 1, 10 );
+            $ip = $this->generate_random_ip();
+            $user_agent = $this->generate_random_user_agent();
+            $created_at = $this->generate_random_date_last_10_days();
+            
+            $title = $this->generate_lorem_title();
+            $address = $this->generate_random_address();
+            $phone = $this->generate_random_phone();
+            $email = $this->generate_random_email();
+
+            $insert = $wpdb->insert(
+                $companies_table,
+                [
+                    'user_id'    => $user_id,
+                    'ip'         => $ip,
+                    'user_agent' => $user_agent,
+                    'title'      => $title,
+                    'address'    => $address,
+                    'phone'      => $phone,
+                    'email'      => $email,
+                    'created_at' => current_time('mysql'),
+                    'updated_at' => current_time('mysql'),
+                ],
+                ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+            );
+
+            if ( $insert ) {
+                $inserted++;
+            } else {
+                $failed++;
+                WP_CLI::debug( "Failed to insert log entry #{$i}: " . $wpdb->last_error );
+            }
+
+            $progress->tick();
+        }
+
+        $progress->finish();
+
+        // Summary
+        WP_CLI::success( sprintf(
+            'Successfully inserted %d log entries. Failed: %d',
+            $inserted,
+            $failed
+        ) );
+
+        // Show sample of inserted data
+        $this->show_sample_companies( 5 );
+    }
+
+    /**
      * Seed the logs table with sample data.
      *
      * ## OPTIONS
@@ -326,7 +417,6 @@ class CLI_Command {
             'Sunt in culpa qui officia',
             'Deserunt mollit anim id',
         );
-
         return $titles[ array_rand( $titles ) ];
     }
 
@@ -346,7 +436,6 @@ class CLI_Command {
             'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores.',
             'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.',
         );
-
         return $descriptions[ array_rand( $descriptions ) ];
     }
 
@@ -373,7 +462,6 @@ class CLI_Command {
             'Sunt in',
             'Deserunt',
         );
-
         return $categories[ array_rand( $categories ) ];
     }
 
@@ -384,9 +472,7 @@ class CLI_Command {
      */
     private function show_sample_logs( $limit = 5 ) {
         global $wpdb;
-
         $table_name = $wpdb->prefix . 'bill_manager_logs';
-
         $results = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT ID, title, created_at FROM {$table_name} ORDER BY ID DESC LIMIT %d",
@@ -394,10 +480,73 @@ class CLI_Command {
             ),
             ARRAY_A
         );
-
         if ( ! empty( $results ) ) {
             WP_CLI::log( "\nSample of inserted logs:" );
             WP_CLI\Utils\format_items( 'table', $results, array( 'ID', 'title', 'created_at' ) );
         }
+    }
+
+    /**
+     * Display sample of recently inserted companies.
+     *
+     * @param int $limit Number of companies to show.
+     */
+    private function show_sample_companies( $limit = 5 ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'bill_manager_companies';
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT ID, title, created_at FROM {$table_name} ORDER BY ID DESC LIMIT %d",
+                $limit
+            ),
+            ARRAY_A
+        );
+        if ( ! empty( $results ) ) {
+            WP_CLI::log( "\nSample of inserted companies:" );
+            WP_CLI\Utils\format_items( 'table', $results, array( 'ID', 'title', 'created_at' ) );
+        }
+    }
+    /**
+     * Generates a random 10-digit phone number in (XXX) XXX-XXXX format.
+     */
+    private function generate_random_phone(): string {
+        $areaCode = rand(200, 999);
+        $prefix   = rand(200, 999);
+        $lineNum  = rand(1000, 9999);
+        
+        return "({$areaCode}) {$prefix}-{$lineNum}";
+    }
+
+    /**
+     * Generates a random email address using common domains.
+     */
+    private function generate_random_email(): string {
+        $names = ['john', 'jane', 'alex', 'taylor', 'morgan', 'sam', 'chris', 'jordan'];
+        $domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com', 'example.com'];
+        
+        $randomName = $names[array_rand($names)] . rand(10, 99);
+        $randomDomain = $domains[array_rand($domains)];
+        
+        return "{$randomName}@{$randomDomain}";
+    }
+
+    /**
+     * Generates a random US-style street address.
+     */
+    function generate_random_address(): string {
+        $streets = ['Main St', 'Oak Ave', 'Pine Rd', 'Maple Dr', 'Cedar Ln', 'Washington Blvd'];
+        $cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia'];
+        $states = ['NY', 'CA', 'IL', 'TX', 'AZ', 'PA'];
+        
+        $houseNumber = rand(100, 9999);
+        $streetIndex = array_rand($streets);
+        $locationIndex = array_rand($cities); // Keeps city and state aligned for realism
+        
+        $street = $streets[$streetIndex];
+        $city = $cities[$locationIndex];
+        $state = $states[$locationIndex];
+        $zipCode = rand(10000, 99999);
+        
+        return "{$houseNumber} {$street}, {$city}, {$state} {$zipCode}";
     }
 }
