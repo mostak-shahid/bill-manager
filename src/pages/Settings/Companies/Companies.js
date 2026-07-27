@@ -144,14 +144,14 @@ const Companies = () => {
         setDeletinging(true);
         try {
             const response = await apiFetch({
-                path: `/bill-manager/v1/companies/${id}`,
+                path: `/bill-manager/v1/company/${id}`,
                 method: 'DELETE',
             });
             // console.log(response);
             if (response.success) {
                 setDataToast({
                     title: __("Success", "bill-manager"),
-                    content: __("Log deleted successfully", "bill-manager"),
+                    content: __("Company deleted successfully", "bill-manager"),
                     type: 'success'
                 });
                 setShowToast(true);
@@ -178,6 +178,7 @@ const Companies = () => {
     const modalDeleteClose = () => {
         setBulkAction('any');
         setSelectedRowKeys([]);
+        setSelectedRowIDs([]);
         setShowDeleteModal(false);
     }
     const modalDeleteShow = (data) => {

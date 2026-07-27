@@ -426,6 +426,7 @@ class Rest_API
                 ],
             ]
         );
+        // Update company
         register_rest_route(
             self::NAMESPACE, 
             '/company/(?P<id>\d+)', 
@@ -466,6 +467,44 @@ class Rest_API
                     ),
                 ),
             ]
+        );
+        // Delete company by ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/company/(?P<id>\d+)',
+            array(
+                'methods'             => WP_REST_Server::DELETABLE,
+                'callback'            => array(BillsController::class, 'delete_company'),
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'id' => array(
+                        'required'          => true,
+                        'sanitize_callback' => 'absint',
+                    ),
+                ),
+            )
+        );        
+
+        // Bulk Delete Logs
+        register_rest_route(
+            self::NAMESPACE,
+            '/companies/bulk-delete',
+            array(
+                'methods'             => WP_REST_Server::DELETABLE,
+                'callback'            => array(BillsController::class, 'bulk_delete_companies'),
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'ids' => array(
+                        'required'          => true,
+                        'type'     => 'array',
+                        'items'    => array('type' => 'integer'),
+                    ),
+                ),
+            )
         );
 
         // Get bills with filters
