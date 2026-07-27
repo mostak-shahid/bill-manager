@@ -300,7 +300,7 @@ const Companies = () => {
             cell: (row) => (
                 <div className="d-flex gap-1 position-relative">
                     {/* <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button> */}
-                    <Button
+                    {/* <Button
                         variant="info"
                         size="sm"
                         as={Link}
@@ -309,8 +309,8 @@ const Companies = () => {
                         rel="noopener noreferrer"
                         >
                         <FaEye />
-                    </Button>
-                    <Button variant="warning" size="sm" onClick={() => modalDetailsShow(row)}><FaEdit /></Button>
+                    </Button> */}
+                    <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button>
                     <Button variant="warning" size="sm" onClick={() => modalEditShow(row)}><FaEdit /></Button>
                     <DeleteButton id={row.ID} onDelete={handleDelete} />
                 </div>

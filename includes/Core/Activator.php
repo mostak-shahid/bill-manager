@@ -124,6 +124,7 @@ class Activator
 			user_agent text NOT NULL,
 			company_id bigint(20) NOT NULL,
 			total_amount bigint(20) NOT NULL,
+			bill_type varchar(45) NOT NULL, /*purchase, sell*/ 
 			bill_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
