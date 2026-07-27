@@ -12,19 +12,19 @@ const Layout = ({ children, sidebar, sidebarPosition='none', fluid=false, classN
                     <div 
                         className="sidebar-left border-end" 
                         // style={{ width: 250, height: '100%' }}
-                        style={{width: '100%', maxWidth: 250 }}
+                        style={{width: 250, flex: '0 0 250px' }}
                     >
                         {sidebar}
                     </div>            
                 }
-                <div className="p-4 w-100">
+                <div className="p-4" style={{flex: 1}}>
                     {children}
                 </div>
                 {sidebarPosition === 'right' &&
                     <div 
                         className="sidebar-right border-start" 
                         // style={{ width: 250, height: '100%' }}
-                        style={{width: '100%', maxWidth: 250 }}
+                        style={{width: 250 }}
                     >
                         {sidebar}
                     </div>            

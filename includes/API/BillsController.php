@@ -361,13 +361,13 @@ class BillsController
         }
 
         $data_query = $wpdb->prepare(
-            "SELECT l.*, u.display_name AS user_name, u.user_login, u.user_email
-            FROM {$companies_table} l
-            LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
-            WHERE l.ID = %d
+            "SELECT l.* 
+            FROM {$companies_table} l 
+            WHERE l.ID = %d 
             LIMIT 1",
             $id
         );
+
 
         $result = $wpdb->get_row($data_query, ARRAY_A);
 

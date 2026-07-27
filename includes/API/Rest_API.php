@@ -347,6 +347,42 @@ class Rest_API
      */
     private function register_bills_endpoints()
     {
+        // Create Company
+        register_rest_route(
+            self::NAMESPACE,
+            '/companies',
+            [
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [BillsController::class, 'create_company'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'title'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'address' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
+                    ),
+                    'phone'   => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'email'   => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'format'            => 'email',
+                        'sanitize_callback' => 'sanitize_email',
+                    ),
+                ),
+            ]
+        );
+
         // Get companies with filters
         register_rest_route(
             self::NAMESPACE,
@@ -390,6 +426,48 @@ class Rest_API
                 ],
             ]
         );
+        register_rest_route(
+            self::NAMESPACE, 
+            '/company/(?P<id>\d+)', 
+            [
+                'methods'             => WP_REST_Server::EDITABLE, // Identical to 'PUT, PATCH'
+                'callback'            => array(BillsController::class, 'update_company'), // Replace with your actual class name
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'id'      => array(
+                        'required'          => true,
+                        'type'              => 'integer',
+                        'validate_callback' => function ($param, $request, $key) {
+                            return is_numeric($param);
+                        }
+                    ),
+                    'title'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'address' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
+                    ),
+                    'phone'   => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'email'   => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'format'            => 'email',
+                        'sanitize_callback' => 'sanitize_email',
+                    ),
+                ),
+            ]
+        );
+
         // Get bills with filters
         register_rest_route(
             self::NAMESPACE,

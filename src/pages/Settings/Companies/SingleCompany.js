@@ -2,9 +2,9 @@ import { __ } from "@wordpress/i18n";
 import { useState, useEffect, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { useParams } from "react-router-dom";
-import { useWindowWidth } from '../../lib/Helpers';
-import './Logs/ResponsiveTable.css'; // Import the CSS file containing media queries
-import { ToastControl } from "../../components";
+import { useWindowWidth } from '../../../lib/Helpers';
+import '../Logs/ResponsiveTable.css';
+import { ToastControl } from "../../../components";
 export default function SingleCompany() {
     // The key names must match the route path parameter (:id)
     const { id } = useParams();

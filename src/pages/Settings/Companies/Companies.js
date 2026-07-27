@@ -6,12 +6,15 @@ import { Link } from 'react-router-dom';
 import { Row, Col, Form, Button, Badge, Modal, Table, OverlayTrigger } from 'react-bootstrap';
 import { Popover } from '@wordpress/components';
 
-import { FaEye, FaTrash } from "react-icons/fa";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
 import DataTable from 'react-data-table-component';
-import { useWindowWidth } from '../../lib/Helpers';
-import './Logs/ResponsiveTable.css'; // Import the CSS file containing media queries
-import { ToastControl } from "../../components";
+import { useWindowWidth } from '../../../lib/Helpers';
+import '../Logs/ResponsiveTable.css';
+import { ToastControl } from "../../../components";
+import CompanyCreateModal from "./CompanyCreateModal";
+import ComapnyDetailsModal from "./ComapnyDetailsModal";
+import ComapnyEditModal from "./ComapnyEditModal";
 
 const pathPrefix = 'admin.php?page=bill-manager#'; // Adjust this if your app is served from a different base path
 const timeFilterOptions = [
@@ -32,6 +35,7 @@ const ExpandedComponent = ({ data }) => (
         {/* <p><strong>Description:</strong> {data.description}</p> */}
         <p><strong>User Email:</strong> {data.user_email}</p>
         <p><strong>User Agent:</strong> {data.user_agent}</p>
+        <p><strong>IP:</strong> {data.ip}</p>
         <p className="show-on-lg"><strong>Category:</strong> {data.user_email}</p>
         <p className="show-on-md"><strong>IP Address :</strong> {data.ip}</p>
         <p className="show-on-sm"><strong>Date:</strong> {data.created_at}</p>
@@ -167,6 +171,7 @@ const Companies = () => {
     };
 
 
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [dataDeleteModal, setDataDeleteModal] = useState([]);
 
@@ -256,30 +261,20 @@ const Companies = () => {
 
 
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [dataDetailsModal, setDataDetailsModal] = useState([]);
-
-    const modalDetailsClose = () => setShowDetailsModal(false);
+    const [dataDetailsModalID, setDataDetailsModalID] = useState(0);
+    
     const modalDetailsShow = (data) => {
-        setDataDetailsModal(data);
+        setDataDetailsModalID(data?.ID);
         setShowDetailsModal(true);
     }
-    /*
-    {
-        "ID": "50",
-        "user_id": "3",
-        "ip": "13.128.72.102",
-        "user_agent": "Mozilla\/5.0 (X11; Linux x86_64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/120.0.0.0 Safari\/537.36",
-        "title": "Duis aute irure dolor",
-        "address": "6267 Cedar Ln, Phoenix, AZ 32859",
-        "phone": "(903) 203-3135",
-        "email": "john38@outlook.com",
-        "created_at": "2026-07-26 16:18:12",
-        "updated_at": "2026-07-26 16:18:12",
-        "user_name": "qaonnuo@mailto.plus",
-        "user_login": "qaonnuo@mailto.plus",
-        "user_email": "qaonnuo@mailto.plus"
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [dataEditModalID, setDataEditModalID] = useState(0);
+    
+    const modalEditShow = (data) => {
+        setDataEditModalID(data?.ID);
+        setShowEditModal(true);
     }
-    */
     const columns = [
         // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
         { name: 'Title', id: 'title', selector: row => row.title, sortable: true },
@@ -295,7 +290,7 @@ const Companies = () => {
             sortable: true
         },
         { name: 'Email', id: 'user_email', selector: row => row.user_email, omit: true },
-        { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, hide: 'md' },
+        { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, omit: true },
         // { name: 'Description', id: 'description', selector: row => row.description, sortable: true, omit: true },
         { name: 'User Agent', id: 'user_agent', selector: row => row.user_agent, sortable: true, omit: true },
         { name: 'Date', id: 'created_at', selector: row => row.created_at, sortable: true, hide: 'sm', },
@@ -311,9 +306,11 @@ const Companies = () => {
                         to={`/settings/companies/${row.ID}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                    >
+                        >
                         <FaEye />
                     </Button>
+                    <Button variant="warning" size="sm" onClick={() => modalDetailsShow(row)}><FaEdit /></Button>
+                    <Button variant="warning" size="sm" onClick={() => modalEditShow(row)}><FaEdit /></Button>
                     <DeleteButton id={row.ID} onDelete={handleDelete} />
                 </div>
             ),
@@ -360,21 +357,22 @@ const Companies = () => {
     };
     return (
         <>
-            <div className="d-flex gap-2 mt-3">
-                {timeFilterOptions.map(({ value, label }) => (
-                    <Badge
-                        bg={value == filter ? "dark" : "secondary"}
-                        // text={value == filter ? "light" : "dark"}
-                        onClick={() => setFilter(value)}
-                        role="button"
-                    >
-                        {label}
-                    </Badge>
-                ))}
-            </div>
+
             <Row className="justify-content-between">
-                <Col sm='6' lg='3' className="text-center text-lg-start mt-3">
-                    <Form.Group>
+                <Col sm='6' lg='3' className="text-center text-lg-start">
+                    <div className="d-flex gap-2 mt-3">
+                        {timeFilterOptions.map(({ value, label }) => (
+                            <Badge
+                                bg={value == filter ? "dark" : "secondary"}
+                                // text={value == filter ? "light" : "dark"}
+                                onClick={() => setFilter(value)}
+                                role="button"
+                            >
+                                {label}
+                            </Badge>
+                        ))}
+                    </div>
+                    <Form.Group className="mt-3">
                         <div className="d-flex align-items-stretch gap-2">
                             <Form.Select
                                 value={bulkAction}
@@ -398,8 +396,17 @@ const Companies = () => {
                         </div>
                     </Form.Group>
                 </Col>
-                <Col sm='6' lg='3' className="text-center text-lg-end mt-3">
-                    <Form.Group>
+                <Col sm='6' lg='3' className="text-center text-lg-end">   
+                    <div className="mt-3">
+                    <Button
+                        variant="outline-primary"
+                        onClick={() => setShowCreateModal(true)}
+                    >
+                        {__('Add New', 'bill-manager')}
+                    </Button>
+
+                    </div>
+                    <Form.Group className="mt-3">
                         <div className="d-flex align-items-stretch gap-2">
                             <Form.Control
                                 type="search"
@@ -416,7 +423,7 @@ const Companies = () => {
                     </Form.Group>
                 </Col>
             </Row>
-            <div ref={containerRef} className="table-wrapper responsive-table-wrapper border mt-3">
+            <div ref={containerRef} className="table-wrapper responsive-table-wrapper border mt-3 w-100">
                 <DataTable
                     keyField="ID"
                     columns={columns}
@@ -452,58 +459,6 @@ const Companies = () => {
                 />
 
             </div>
-            <Modal size="lg" show={showDetailsModal} onHide={modalDetailsClose}>
-                {/* {console.log(dataDetailsModal)} */}
-                <Modal.Header closeButton>
-                    <Modal.Title>{dataDetailsModal?.title}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <h6 className="h6">{__('User Details', 'bill-manager')}</h6>
-                    <ul className="list-unstyled">
-                        <li>{__('User Name', 'bill-manager')}: {dataDetailsModal?.user_name}</li>
-                        <li>{__('User ID', 'bill-manager')}: {dataDetailsModal?.user_id}</li>
-                        <li>{__('User Email', 'bill-manager')}: {dataDetailsModal?.user_email}</li>
-                        <li>{__('User IP', 'bill-manager')}: {dataDetailsModal?.ip}</li>
-                        <li>{__('User Details', 'bill-manager')}: {dataDetailsModal?.user_agent}</li>
-                        <li>{__('Category', 'bill-manager')}: {dataDetailsModal?.category}</li>
-                        <li>{__('Date', 'bill-manager')}: {dataDetailsModal?.created_at}</li>
-                    </ul>
-                    <h6 className="h6">{__('Changes', 'bill-manager')}</h6>
-                    {
-                        dataDetailsModal?.description &&
-                        <Table striped bordered hover responsive>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>{__('Setting Name', 'bill-manager')}</th>
-                                    <th>{__('URL Path', 'bill-manager')}</th>
-                                    <th>{__('Old Value', 'bill-manager')}</th>
-                                    <th>{__('New Value', 'bill-manager')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {JSON.parse(dataDetailsModal.description).map((change, index) => (
-                                    <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>{change.title}</td>
-                                        <td><a href={pathPrefix + change.url}><code>{change.url}</code></a></td>
-                                        <td>
-                                            {formatValue(change.old)}
-                                        </td>
-                                        <td>
-                                            {formatValue(change.changed)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    }
-
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={modalDetailsClose}>{__('Close', 'bill-manager')}</Button>
-                </Modal.Footer>
-            </Modal>
             <Modal size="sm" centered show={showDeleteModal} onHide={modalDeleteClose}>
                 <Modal.Body>
                     <p className="mb-2">{__('Are you sure you want to delete these rows? This action cannot be undone.', 'bill-manager')}</p>
@@ -518,6 +473,13 @@ const Companies = () => {
 
                 </Modal.Body>
             </Modal>
+            {dataEditModalID ?
+                <ComapnyEditModal show={showEditModal} setShow={setShowEditModal} id={dataEditModalID} setReloadTable={setReloadTable}/>: ''
+            }
+            {dataDetailsModalID ?
+                <ComapnyDetailsModal show={showDetailsModal} setShow={setShowDetailsModal} id={dataDetailsModalID}/> : ''
+            }
+            <CompanyCreateModal show={showCreateModal} setShow={setShowCreateModal} setReloadTable={setReloadTable}/>
 
             <ToastControl
                 show={showToast}

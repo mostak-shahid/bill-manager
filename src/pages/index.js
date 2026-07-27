@@ -1,7 +1,7 @@
 import Dashboard from './Dashboard/Dashboard';
 import Settings from './Settings/Settings';
-import Companies from './Settings/Companies';
-import SingleCompany from './Settings/SingleCompany';
+import Companies from './Settings/Companies/Companies';
+import SingleCompany from './Settings/Companies/SingleCompany';
 import BasicInputs from './Settings/BasicInputs';
 
 import ArrayInputs from './Settings/ArrayInputs';

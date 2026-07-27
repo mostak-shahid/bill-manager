@@ -1,5 +1,11 @@
-[    
-    { "itemKey": "inputs", "text": "Inputs", "url": "/settings/inputs/",
+[
+    {
+        "itemKey": "companies",
+        "text": "Companies",
+        "description": "Share feedback, report issues, or suggest improvements.",
+        "url": "/settings/companies"
+    },    
+    { "itemKey": "inputs", "text": "Inputs", "url": "/settings/companies/",
         "items": [            
             {
                 "itemKey": "basic_inputs",
