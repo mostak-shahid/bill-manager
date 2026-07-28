@@ -4,11 +4,41 @@
 /* --- Breakpoint: Small Screens (599px and below) --- */
 /* Targets both header and body cells using the custom class pointer */
 /* Expanded Detail Section Styling */
+.responsive-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto; /* Allows the table to scroll within the wrapper */
+  position: relative;
+}
 .responsive-table-wrapper .show-on-lg,
 .responsive-table-wrapper .show-on-md,
 .responsive-table-wrapper .show-on-sm,
 .responsive-table-wrapper .rdt_rightPinSpacer {
   display: none;
+}
+.responsive-table-wrapper .rdt_TableHeadRow .rdt_columnCheckbox,
+.responsive-table-wrapper .rdt_TableHeadRow .rdt_columnExpander {
+  position: sticky;
+  background-color: #ffffff;
+  z-index: 10;
+}
+.responsive-table-wrapper .rdt_TableHeadRow .rdt_columnCheckbox {
+  left: 0;
+}
+.responsive-table-wrapper .rdt_TableHeadRow .rdt_columnExpander {
+  left: 48px;
+}
+.responsive-table-wrapper .rdt_TableRow .rdt_cellCheckbox,
+.responsive-table-wrapper .rdt_TableRow .rdt_cellExpander {
+  position: sticky;
+  background-color: #ffffff;
+  z-index: 10;
+}
+.responsive-table-wrapper .rdt_TableRow .rdt_cellCheckbox {
+  left: 0;
+}
+.responsive-table-wrapper .rdt_TableRow .rdt_cellExpander {
+  left: 48px;
 }
 .responsive-table-wrapper .expanded-row-container {
   padding: 15px 24px;

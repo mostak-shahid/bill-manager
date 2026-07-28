@@ -1,0 +1,10 @@
+.plugin-starter-layout {
+    .sidebar {
+        flex: 0 0 250px;
+        width: 250px;
+    }
+    .main-content {
+        flex: 1;
+        width: 100px;
+    }
+}

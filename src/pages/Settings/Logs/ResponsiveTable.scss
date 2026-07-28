@@ -7,11 +7,46 @@ $background-color_1: #f9f9f9;
 /* Targets both header and body cells using the custom class pointer */
 /* Expanded Detail Section Styling */
 .responsive-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto; /* Allows the table to scroll within the wrapper */
+    position: relative;
+
     .show-on-lg,
     .show-on-md,
     .show-on-sm,
     .rdt_rightPinSpacer {
         display: none;
+    }
+    .rdt_TableHeadRow {
+        .rdt_columnCheckbox,
+        .rdt_columnExpander {
+            position: sticky;
+            background-color: #ffffff;
+            z-index: 10;
+        }
+        .rdt_columnCheckbox {
+            left: 0;
+        }
+
+        .rdt_columnExpander {
+            left: 48px;
+        }
+    }
+    .rdt_TableRow {
+        .rdt_cellCheckbox,
+        .rdt_cellExpander {
+            position: sticky;
+            background-color: #ffffff;
+            z-index: 10;
+        }
+        .rdt_cellCheckbox {
+            left: 0;
+        }
+
+        .rdt_cellExpander {
+            left: 48px;
+        }
     }
 
     .expanded-row-container {

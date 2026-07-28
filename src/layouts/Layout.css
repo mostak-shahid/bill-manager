@@ -1,0 +1,8 @@
+.plugin-starter-layout .sidebar {
+  flex: 0 0 250px;
+  width: 250px;
+}
+.plugin-starter-layout .main-content {
+  flex: 1;
+  width: 100px;
+}/*# sourceMappingURL=Layout.css.map */

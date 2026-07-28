@@ -263,7 +263,7 @@ const Companies = () => {
 
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [dataDetailsModalID, setDataDetailsModalID] = useState(0);
-    
+
     const modalDetailsShow = (data) => {
         setDataDetailsModalID(data?.ID);
         setShowDetailsModal(true);
@@ -271,30 +271,31 @@ const Companies = () => {
 
     const [showEditModal, setShowEditModal] = useState(false);
     const [dataEditModalID, setDataEditModalID] = useState(0);
-    
+
     const modalEditShow = (data) => {
         setDataEditModalID(data?.ID);
         setShowEditModal(true);
     }
     const columns = [
         // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
-        { name: 'Title', id: 'title', selector: row => row.title, sortable: true },
-        { name: 'Phone', id: 'phone', selector: row => row.phone, sortable: true, omit: true },
-        { name: 'Email', id: 'email', selector: row => row.email, sortable: true, hide: 'lg', },
+        { name: 'Title', id: 'title', selector: row => row.title, sortable: true, pinned: 'left' },
+        { name: 'Phone', id: 'phone', selector: row => row.phone, sortable: true, hide: 'sm' },
+        { name: 'Email', id: 'email', selector: row => row.email, sortable: true, hide: 'md', },
         { name: 'Address', id: 'address', selector: row => row.address, sortable: true, hide: 'lg', },
 
         {
             name: 'User',
             id: 'user_id',
             // selector: row => row.user_id, 
-            cell: (row) => <div><div class="fw-semibold">{row.user_login}</div>ID:({row.user_id})</div>,
-            sortable: true
+            cell: (row) => <div><span class="fw-semibold">{row.user_login}</span>ID:({row.user_id})</div>,
+            sortable: true,
+            omit: true
         },
         { name: 'Email', id: 'user_email', selector: row => row.user_email, omit: true },
         { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, omit: true },
         // { name: 'Description', id: 'description', selector: row => row.description, sortable: true, omit: true },
         { name: 'User Agent', id: 'user_agent', selector: row => row.user_agent, sortable: true, omit: true },
-        { name: 'Date', id: 'created_at', selector: row => row.created_at, sortable: true, hide: 'sm', },
+        { name: 'Date', id: 'created_at', selector: row => row.created_at, sortable: true, hide: 'sm'},
         {
             name: 'Action',
             cell: (row) => (
@@ -358,22 +359,39 @@ const Companies = () => {
     };
     return (
         <>
-
-            <Row className="justify-content-between">
-                <Col sm='6' lg='3' className="text-center text-lg-start">
-                    <div className="d-flex gap-2 mt-3">
-                        {timeFilterOptions.map(({ value, label }) => (
-                            <Badge
-                                bg={value == filter ? "dark" : "secondary"}
-                                // text={value == filter ? "light" : "dark"}
-                                onClick={() => setFilter(value)}
-                                role="button"
-                            >
-                                {label}
-                            </Badge>
-                        ))}
+            <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
+                <div className="text-center text-lg-start order-1 order-lg-0" style={{width: '100%', maxWidth: 350}}>
+                    <div className="mt-1 mt-lg-3">
+                        <div className="d-flex justify-content-center justify-content-lg-start align-items-start gap-2" style={{ height: 38 }}>
+                            {timeFilterOptions.map(({ value, label }) => (
+                                <Badge
+                                    bg={value == filter ? "dark" : "secondary"}
+                                    // text={value == filter ? "light" : "dark"}
+                                    onClick={() => setFilter(value)}
+                                    role="button"
+                                >
+                                    {label}
+                                </Badge>
+                            ))}
+                        </div>
                     </div>
-                    <Form.Group className="mt-3">
+                </div>
+                <div className="text-center text-lg-end order-0 order-lg-1" style={{width: '100%', maxWidth: 350}}>
+                    <div className="mt-1 mt-lg-3">
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => setShowCreateModal(true)}
+                        >
+                            {__('Add New', 'bill-manager')}
+                        </Button>
+
+                    </div>
+                </div>
+            </div>
+
+            <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
+                <div className="text-center text-lg-start" style={{width: '100%', maxWidth: 350}}>                    
+                    <Form.Group className="mt-1 mt-lg-3">
                         <div className="d-flex align-items-stretch gap-2">
                             <Form.Select
                                 value={bulkAction}
@@ -396,18 +414,9 @@ const Companies = () => {
                             </Button>
                         </div>
                     </Form.Group>
-                </Col>
-                <Col sm='6' lg='3' className="text-center text-lg-end">   
-                    <div className="mt-3">
-                    <Button
-                        variant="outline-primary"
-                        onClick={() => setShowCreateModal(true)}
-                    >
-                        {__('Add New', 'bill-manager')}
-                    </Button>
-
-                    </div>
-                    <Form.Group className="mt-3">
+                </div>
+                <div className="text-center text-lg-end" style={{width: '100%', maxWidth: 350}}>
+                    <Form.Group className="mt-1 mt-lg-3">
                         <div className="d-flex align-items-stretch gap-2">
                             <Form.Control
                                 type="search"
@@ -422,9 +431,10 @@ const Companies = () => {
                         </div>
 
                     </Form.Group>
-                </Col>
-            </Row>
-            <div ref={containerRef} className="table-wrapper responsive-table-wrapper border mt-3 w-100">
+                </div>
+            </div>
+
+            <div ref={containerRef} className="table-wrapper responsive-table-wrapper border mt-3">
                 <DataTable
                     keyField="ID"
                     columns={columns}
@@ -452,11 +462,12 @@ const Companies = () => {
                         setSortOrder(sortDirection);
                     }}
 
-
                     expandableRows={hasHiddenColumns} // Turns off the expander logic entirely if on desktop
                     expandableRowDisabled={row => !hasHiddenColumns} // Hides the ">" arrow icon dynamically per row
                     expandableRowsComponent={ExpandedComponent}
                     responsive
+                    resizable
+                // customStyles={customStyles}
                 />
 
             </div>
@@ -475,12 +486,12 @@ const Companies = () => {
                 </Modal.Body>
             </Modal>
             {dataEditModalID ?
-                <ComapnyEditModal show={showEditModal} setShow={setShowEditModal} id={dataEditModalID} setReloadTable={setReloadTable}/>: ''
+                <ComapnyEditModal show={showEditModal} setShow={setShowEditModal} id={dataEditModalID} setReloadTable={setReloadTable} /> : ''
             }
             {dataDetailsModalID ?
-                <ComapnyDetailsModal show={showDetailsModal} setShow={setShowDetailsModal} id={dataDetailsModalID}/> : ''
+                <ComapnyDetailsModal show={showDetailsModal} setShow={setShowDetailsModal} id={dataDetailsModalID} /> : ''
             }
-            <CompanyCreateModal show={showCreateModal} setShow={setShowCreateModal} setReloadTable={setReloadTable}/>
+            <CompanyCreateModal show={showCreateModal} setShow={setShowCreateModal} setReloadTable={setReloadTable} />
 
             <ToastControl
                 show={showToast}
