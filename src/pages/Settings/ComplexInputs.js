@@ -215,7 +215,7 @@ const ComplexInputs = () => {
                                     enabler: true,
                                 }}
                                 fields={[
-                                    { type: "input", name: "title", placeholder: "Address 1", className: "input-field", label: "Address 1" },
+                                    { type: "input", name: "title", placeholder: "Address 1", className: "input-field", label: "Address 1", attributes:{'data-url': 'someurl', 'list': "browsers"} },
                                     { type: "textarea", name: "note", placeholder: "Note", className: "textarea-field", label: "Note" },
                                     { type: "checkbox", name: "enable", placeholder: "Enable", className: "checkbox-field", label: "Enable" },
                                     { type: "radio", name: "gender", className: "radio-field", label: "Gender", options: [{ key: "male", value: "Male" }, { key: "female", value: "Female" }] },

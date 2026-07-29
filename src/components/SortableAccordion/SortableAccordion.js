@@ -40,7 +40,7 @@ const SortableAccordion = ({
     };
 
     const updateField = (sectionId, fieldName, value) => {
-        console.log(sectionId, fieldName, value)
+        // console.log(sectionId, fieldName, value)
         setSections((prevSections) =>
             prevSections.map((section) =>
                 section.id === sectionId
@@ -182,6 +182,7 @@ const DynamicField = ({ field, value, onChange }) => {
                     className={field.className}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
+                    {...field.attributes}
                 />
             );
         case "textarea":
@@ -194,6 +195,7 @@ const DynamicField = ({ field, value, onChange }) => {
                     className={field.className}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
+                    {...field.attributes}
                 />
             );
         case "checkbox":
@@ -208,6 +210,7 @@ const DynamicField = ({ field, value, onChange }) => {
                         checked={value}
                         onChange={(e) => onChange(e.target.checked)}
                         id={convertToSlug(`${field.name}`)}
+                        {...field.attributes}
                     />
                 </div>
             );
@@ -236,6 +239,7 @@ const DynamicField = ({ field, value, onChange }) => {
                     className={field.className}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
+                    {...field.attributes}
                 >
                     <option value="">{__('Select', 'bill-manager')}</option>
                     {field.options.map((option) => (
@@ -254,6 +258,7 @@ const DynamicField = ({ field, value, onChange }) => {
                     multiple
                     value={value || []}
                     onChange={(e) => onChange([...e.target.selectedOptions].map((o) => o.value))}
+                    {...field.attributes}
                 >
                     {field.options.map((option) => (
                         <option key={option.key} value={option.key}>
