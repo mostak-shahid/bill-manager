@@ -152,6 +152,7 @@ const DraggableAccordionItem = ({ name, index, section, moveSection, updateField
                         value={getDisplayValue()}
                         onChange={(e) => updateField(section.id, '', e.target.value)}
                         onClick={(e) => e.stopPropagation()} // Prevent accordion toggle when clicking input
+                        required={true}
                     />
                 </div>
                 <div className="right-part">

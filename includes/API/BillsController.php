@@ -11,7 +11,6 @@ use WP_REST_Server;
 
 class BillsController
 {
-
     /**
      * Create company
      *
@@ -479,7 +478,7 @@ class BillsController
     }
 
     /**
-     * Bulk delete bill entry
+     * Bulk delete country entry
      *
      * @param WP_REST_Request $request Request object.
      * @return WP_REST_Response|WP_Error
@@ -527,7 +526,7 @@ class BillsController
     }
 
     /**
-     * Delete all bill entries
+     * Delete all country entries
      *
      * @param WP_REST_Request $request Request object.
      * @return WP_REST_Response|WP_Error
@@ -589,6 +588,88 @@ class BillsController
             array(
                 'success' => true,
                 'data'    => $results,
+            ),
+            200
+        );
+    }
+
+
+    /**
+     * Create bill
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function create_bill(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+        $companies_table = $wpdb->prefix . 'bill_manager_bills';
+
+        $user_id        = get_current_user_id();
+        $ip             = Utils::get_client_ip();
+        $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+
+        $company_id     = sanitize_text_field(wp_unslash($request->get_param('company_id')));
+        $total_amount   = sanitize_text_field(wp_unslash($request->get_param('total_amount')));
+        $bill_type      = sanitize_textarea_field(wp_unslash($request->get_param('bill_type')));
+        $bill_date      = sanitize_text_field(wp_unslash($request->get_param('bill_date')));
+        $bill_items     = map_deep(wp_unslash($request->get_param('bill_items')), 'wp_kses_post');
+
+        $insert = $wpdb->insert(
+            $companies_table,
+            [
+                'user_id'       => $user_id,
+                'ip'            => $ip,
+                'user_agent'    => $user_agent,
+                'company_id'    => $company_id,
+                'total_amount'  => $total_amount,
+                'bill_type'     => $bill_type,
+                'bill_date'     => $bill_date,
+                'created_at'    => current_time('mysql'),
+                'updated_at'    => current_time('mysql'),
+            ],
+            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+        );
+
+        // $wpdb->insert() returns false on failure, or the number of rows affected on success.
+        if ($insert === false) {
+            return new WP_Error(
+                'rest_insert_error',
+                'An error occurred while saving the company. Please try again.',
+                array(
+                    'status'   => 500,
+                    'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
+                )
+            );
+        }
+
+        $item_result = self::create_item($bill_items, (int) $wpdb->insert_id);
+        if ($item_result instanceof WP_Error) {
+            return $item_result;
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => 'Company created successfully.',
+                'data'    => [
+                    'id'            => $wpdb->insert_id,
+                    'user_id'       => $user_id,
+                    'ip'            => $ip,
+                    'user_agent'    => $user_agent,
+                    'company_id'    => $company_id,
+                    'total_amount'  => $total_amount,
+                    'bill_type'     => $bill_type,
+                    'bill_date'     => $bill_date,
+                ],
             ),
             200
         );
@@ -982,6 +1063,86 @@ class BillsController
             array(
                 'success' => true,
                 'data'    => $results,
+            ),
+            200
+        );
+    }
+
+
+    /**
+     * Create bill
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public function create_item(WP_REST_Request $request, $bill_id = 0)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+        $companies_table = $wpdb->prefix . 'bill_manager_bill_items';
+
+        $user_id        = get_current_user_id();
+        $ip             = Utils::get_client_ip();
+        $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+
+        $bill_id     = sanitize_text_field(wp_unslash($request->get_param('bill_id')));
+        $title   = sanitize_text_field(wp_unslash($request->get_param('title')));
+        $quantity      = sanitize_textarea_field(wp_unslash($request->get_param('quantity')));
+        $unit      = sanitize_text_field(wp_unslash($request->get_param('unit')));
+        $unit_price      = sanitize_text_field(wp_unslash($request->get_param('unit_price')));
+        $insert = $wpdb->insert(
+            $companies_table,
+            [
+                'user_id'       => $user_id,
+                'ip'            => $ip,
+                'user_agent'    => $user_agent,
+
+                'bill_id'    => $bill_id,
+                'title'  => $title,
+                'quantity'     => $quantity,
+                'unit'     => $unit,
+                'unit_price'     => $unit_price,
+
+                'created_at'    => current_time('mysql'),
+                'updated_at'    => current_time('mysql'),
+            ],
+            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+        );
+
+        // $wpdb->insert() returns false on failure, or the number of rows affected on success.
+        if ($insert === false) {
+            return new WP_Error(
+                'rest_insert_error',
+                'An error occurred while saving the company. Please try again.',
+                array(
+                    'status'   => 500,
+                    'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
+                )
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => 'Company created successfully.',
+                'data'    => [
+                    'id'            => $wpdb->insert_id,
+                    'user_id'       => $user_id,
+                    'ip'            => $ip,
+                    
+                    'bill_id'    => $bill_id,
+                    'title'  => $title,
+                    'quantity'     => $quantity,
+                    'unit'     => $unit,
+                    'unit_price'     => $unit_price,
+                ],
             ),
             200
         );

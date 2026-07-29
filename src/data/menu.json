@@ -4,6 +4,12 @@
         "text": "Companies",
         "description": "Share feedback, report issues, or suggest improvements.",
         "url": "/settings/companies"
+    },  
+    {
+        "itemKey": "bills",
+        "text": "Bills",
+        "description": "Share feedback, report issues, or suggest improvements.",
+        "url": "/settings/bills"
     },    
     { "itemKey": "inputs", "text": "Inputs", "url": "/settings/companies/",
         "items": [            

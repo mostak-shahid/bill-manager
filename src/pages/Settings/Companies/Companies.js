@@ -32,13 +32,17 @@ const bulkActions = [
 // 2. Define the Expanded Component to show hidden column data on mobile
 const ExpandedComponent = ({ data }) => (
     <div className="expanded-row-container">
-        {/* <p><strong>Description:</strong> {data.description}</p> */}
+
+        <p><strong>User Name:</strong> <strong>{data.user_name}</strong>ID:({data.user_id})</p>
+        <p><strong>User ID:</strong> ({data.user_id})</p>
         <p><strong>User Email:</strong> {data.user_email}</p>
         <p><strong>User Agent:</strong> {data.user_agent}</p>
-        <p><strong>IP:</strong> {data.ip}</p>
-        <p className="show-on-lg"><strong>Category:</strong> {data.user_email}</p>
-        <p className="show-on-md"><strong>IP Address :</strong> {data.ip}</p>
-        <p className="show-on-sm"><strong>Date:</strong> {data.created_at}</p>
+        <p><strong>User IP:</strong> {data.ip}</p>
+        
+        <p className="show-on-lg"><strong>Company Address:</strong> {data.address}</p>
+        <p className="show-on-md"><strong>Company Email :</strong> {data.email}</p>
+        <p className="show-on-sm"><strong>Company Phone:</strong> {data.phone}</p>
+        <p className="show-on-sm"><strong>Created Date:</strong> {data.created_at}</p>
     </div>
 );
 const formatValue = (val) => {
