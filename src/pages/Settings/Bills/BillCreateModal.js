@@ -177,14 +177,19 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                                 titlePrefix: 'Address',
                                 enabler: true,
                             }}
+                            /*
+                            bill_id bigint(20) NOT NULL,
+			title varchar(255) NOT NULL,
+			quantity bigint(20) NOT NULL,
+			unit varchar(45) NOT NULL,
+			unit_price bigint(20) NOT NULL,
+			
+                            */
                             fields={[
-                            { type: "input", name: "title", placeholder: "Address 1", className: "input-field", label: "Address 1", attributes:{'required': true} },
-                            { type: "textarea", name: "note", placeholder: "Note", className: "textarea-field", label: "Note" },
-                            { type: "checkbox", name: "enable", placeholder: "Enable", className: "checkbox-field", label: "Enable" },
-                            { type: "radio", name: "gender", className: "radio-field", options: [{ key: "male", value: "Male" }, { key: "female", value: "Female" }] },
-                            { type: "select", name: "country", className: "select-field", options: [{ key: "us", value: "United States" }, { key: "ca", value: "Canada" }] },
-                            { type: "multi-select", name: "languages", className: "multi-select-field", options: [{ key: "en", value: "English" }, { key: "fr", value: "French" }] },
-                            { type: "checkbox-group", name: "hobbies", className: "checkbox-group-field", options: [{ key: "reading", value: "Reading" }, { key: "sports", value: "Sports" }] }
+                            { type: "input", name: "title", placeholder: "Title", className: "input-field", label: "Title", attributes:{'required': true} },
+                            { type: "input", name: "quantity", placeholder: "Quantity", className: "input-field", label: "Quantity", attributes:{'type': 'number', min: 1, 'required': true} },
+                            { type: "input", name: "unit", placeholder: "Unit", className: "input-field", label: "Unit", attributes:{'type': 'number', min: 1, 'required': true} },
+                            { type: "input", name: "unit_price", placeholder: "Unit Price", className: "input-field", label: "Unit Price", attributes:{'type': 'number', min: 1, 'required': true} },
                         ]} 
                             defaultValues={billItems} 
                             onChange={(value) => setBillItems(value)}
