@@ -41,55 +41,58 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
     };
     const handleForm = async () => {
 
-        // if (title && title.trim() !== '') {
-        //     setProcessing(true);
-        //     try {
-        //         const result = await apiFetch({
-        //             path: "/bill-manager/v1/bills",
-        //             method: "POST",
-        //             data: {
-        //                 title, address, phone, email
-        //             },
-        //             headers: {
-        //                 'X-WP-Nonce': bill_manager_ajax_obj.api_nonce
-        //             }
-        //         });
-        //         // console.log(result);
-        //         if (result.success) {
-        //             setValidated(false);
-        //             setTitle('');
-        //             setAddress('');
-        //             setPhone('');
-        //             setEmail('');
-        //             setDataToast({
-        //                 title: __("Success", "bill-manager"),
-        //                 content: __("Company created successfully!", "bill-manager"),
-        //                 type: 'success'
-        //             });
-        //             setShowToast(true);
-        //             handleClose();
-        //             setReloadTable(Math.random());
-        //         }
+        if (companyId && companyId.trim() !== '') {
+            setProcessing(true);
+            try {
+                const result = await apiFetch({
+                    path: "/bill-manager/v1/bill",
+                    method: "POST",
+                    data: {
+                        company_id: companyId, 
+                        bill_type: billType,
+                        bill_date: billDate,
+                        bill_items: billItems
+                    },
+                    headers: {
+                        'X-WP-Nonce': bill_manager_ajax_obj.api_nonce
+                    }
+                });
+                // console.log(result);
+                if (result.success) {
+                    setValidated(false);
+                    setCompanyId('');
+                    setBillType('purchase');
+                    setBillDate('');
+                    setBillItems([]);
+                    setDataToast({
+                        title: __("Success", "bill-manager"),
+                        content: __("Company created successfully!", "bill-manager"),
+                        type: 'success'
+                    });
+                    setShowToast(true);
+                    handleClose();
+                    setReloadTable(Math.random());
+                }
 
-        //     } catch (error) {
-        //         console.error("Company creating Error:", error);
-        //         setDataToast({
-        //             title: __("Error", "bill-manager"),
-        //             content: __("Please try again!", "bill-manager"),
-        //             type: 'danger'
-        //         });
-        //         setShowToast(true);
-        //     } finally {
-        //         setProcessing(false);
-        //     }
-        // } else {
-        //     setDataToast({
-        //         title: __("Warning", "bill-manager"),
-        //         content: __("Title is required", "bill-manager"),
-        //         type: 'warning'
-        //     });
-        //     setShowToast(true);
-        // }
+            } catch (error) {
+                console.error("Company creating Error:", error);
+                setDataToast({
+                    title: __("Error", "bill-manager"),
+                    content: __("Please try again!", "bill-manager"),
+                    type: 'danger'
+                });
+                setShowToast(true);
+            } finally {
+                setProcessing(false);
+            }
+        } else {
+            setDataToast({
+                title: __("Warning", "bill-manager"),
+                content: __("Title is required", "bill-manager"),
+                type: 'warning'
+            });
+            setShowToast(true);
+        }
     };
 
 
@@ -188,7 +191,7 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                             fields={[
                             { type: "input", name: "title", placeholder: "Title", className: "input-field", label: "Title", attributes:{'required': true} },
                             { type: "input", name: "quantity", placeholder: "Quantity", className: "input-field", label: "Quantity", attributes:{'type': 'number', min: 1, 'required': true} },
-                            { type: "input", name: "unit", placeholder: "Unit", className: "input-field", label: "Unit", attributes:{'type': 'number', min: 1, 'required': true} },
+                            { type: "input", name: "unit", placeholder: "Unit", className: "input-field", label: "Unit", attributes:{'required': true} },
                             { type: "input", name: "unit_price", placeholder: "Unit Price", className: "input-field", label: "Unit Price", attributes:{'type': 'number', min: 1, 'required': true} },
                         ]} 
                             defaultValues={billItems} 

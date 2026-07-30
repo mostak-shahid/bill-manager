@@ -487,7 +487,7 @@ class Rest_API
             )
         );        
 
-        // Bulk Delete Logs
+        // Bulk Delete countries
         register_rest_route(
             self::NAMESPACE,
             '/companies/bulk-delete',
@@ -505,6 +505,44 @@ class Rest_API
                     ),
                 ),
             )
+        );
+
+        
+        // Create Bill
+        register_rest_route(
+            self::NAMESPACE,
+            '/bill',
+            [
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [BillsController::class, 'create_bill'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'company_id'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'bill_type' => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'bill_date'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'bill_items'   => array(
+                        'required'          => false,
+                        'type'              => 'array',
+                        'items'             => array(
+                            'type' => 'object', // Change to 'string', 'integer' or 'object' if needed
+                        ),
+                    ),
+                ),
+            ]
         );
 
         // Get bills with filters
