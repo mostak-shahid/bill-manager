@@ -176,18 +176,10 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                         <SortableAccordion 
                             name='bill_items'
                             options={{
-                                addButton: 'Add New Field',
+                                addButton: 'Add New Item',
                                 titlePrefix: 'Address',
                                 enabler: true,
                             }}
-                            /*
-                            bill_id bigint(20) NOT NULL,
-			title varchar(255) NOT NULL,
-			quantity bigint(20) NOT NULL,
-			unit varchar(45) NOT NULL,
-			unit_price bigint(20) NOT NULL,
-			
-                            */
                             fields={[
                             { type: "input", name: "title", placeholder: "Title", className: "input-field", label: "Title", attributes:{'required': true} },
                             { type: "input", name: "quantity", placeholder: "Quantity", className: "input-field", label: "Quantity", attributes:{'type': 'number', min: 1, 'required': true} },

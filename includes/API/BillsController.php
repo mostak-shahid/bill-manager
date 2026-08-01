@@ -652,9 +652,9 @@ class BillsController
         }
 
         $item_result = self::create_item($bill_items, (int) $wpdb->insert_id);
-        // if ($item_result instanceof WP_Error) {
-        //     return $item_result;
-        // }
+        if ($item_result instanceof WP_Error) {
+            return $item_result;
+        }
 
         return new WP_REST_Response(
             array(
@@ -1083,48 +1083,67 @@ class BillsController
         //     );
         // }
 
-        // global $wpdb;
-        // $companies_table = $wpdb->prefix . 'bill_manager_bill_items';
+        global $wpdb;
+        $items_table = $wpdb->prefix . 'bill_manager_bill_items';
 
-        // $user_id        = get_current_user_id();
-        // $ip             = Utils::get_client_ip();
-        // $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+        $user_id        = get_current_user_id();
+        $ip             = Utils::get_client_ip();
+        $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
 
-        // $bill_id     = sanitize_text_field(wp_unslash($request->get_param('bill_id')));
-        // $title   = sanitize_text_field(wp_unslash($request->get_param('title')));
-        // $quantity      = sanitize_textarea_field(wp_unslash($request->get_param('quantity')));
-        // $unit      = sanitize_text_field(wp_unslash($request->get_param('unit')));
-        // $unit_price      = sanitize_text_field(wp_unslash($request->get_param('unit_price')));
-        // $insert = $wpdb->insert(
-        //     $companies_table,
-        //     [
-        //         'user_id'       => $user_id,
-        //         'ip'            => $ip,
-        //         'user_agent'    => $user_agent,
+        /*
+        	bill_id bigint(20) NOT NULL,
+			title varchar(255) NOT NULL,
+			quantity bigint(20) NOT NULL,
+			unit varchar(45) NOT NULL,
+			unit_price bigint(20) NOT NULL,
 
-        //         'bill_id'    => $bill_id,
-        //         'title'  => $title,
-        //         'quantity'     => $quantity,
-        //         'unit'     => $unit,
-        //         'unit_price'     => $unit_price,
+            [title] => Rod
+            [quantity] => 20
+            [unit] => Ton
+            [unit_price] => 79500
+        */
 
-        //         'created_at'    => current_time('mysql'),
-        //         'updated_at'    => current_time('mysql'),
-        //     ],
-        //     ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
-        // );
+        $bill_id     = $bill_id?sanitize_text_field(wp_unslash($bill_id)):'';
+        foreach($items as $item) {
+            $title     = isset($item['title'])?sanitize_text_field(wp_unslash($item['title'])):'';
+            $quantity     = isset($item['quantity'])?sanitize_text_field(wp_unslash($item['quantity'])):'';
+            $unit     = isset($item['unit'])?sanitize_text_field(wp_unslash($item['unit'])):'';
+            $unit_price     = isset($item['unit_price'])?sanitize_text_field(wp_unslash($item['unit_price'])):'';
+        
+            $insert = $wpdb->insert(
+                $items_table,
+                [
+                    'user_id'       => $user_id,
+                    'ip'            => $ip,
+                    'user_agent'    => $user_agent,
 
-        // // $wpdb->insert() returns false on failure, or the number of rows affected on success.
-        // if ($insert === false) {
-        //     return new WP_Error(
-        //         'rest_insert_error',
-        //         'An error occurred while saving the company. Please try again.',
-        //         array(
-        //             'status'   => 500,
-        //             'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
-        //         )
-        //     );
-        // }
+                    'bill_id'    => $bill_id,
+                    'title'  => $title,
+                    'quantity'     => $quantity,
+                    'unit'     => $unit,
+                    'unit_price'     => $unit_price,
+
+                    'created_at'    => current_time('mysql'),
+                    'updated_at'    => current_time('mysql'),
+                ],
+                ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+            );
+
+
+            // $wpdb->insert() returns false on failure, or the number of rows affected on success.
+            if ($insert === false) {
+                return new WP_Error(
+                    'rest_insert_error',
+                    'An error occurred while saving the company. Please try again.',
+                    array(
+                        'status'   => 500,
+                        'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
+                    )
+                );
+            }
+
+        }
+        return true;
 
         // return new WP_REST_Response(
         //     array(

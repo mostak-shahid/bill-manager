@@ -1,0 +1,225 @@
+Yes. Based on the improvements I suggested, below is a production-ready schema that I'd use for a WordPress plugin.
+
+### Improvements made
+
+* ✅ Uses `DECIMAL(12,2)` for all monetary values.
+* ✅ Adds indexes for better query performance.
+* ✅ Adds bill number.
+* ✅ Adds payment method.
+* ✅ Adds discount, tax, shipping.
+* ✅ Adds opening balance for companies.
+* ✅ Adds status fields.
+* ✅ Adds notes fields.
+* ✅ Keeps bill status and balance **calculated**, not stored.
+
+---
+
+## Companies Table
+
+```php
+global $wpdb;
+
+$charset_collate = $wpdb->get_charset_collate();
+
+$companies_table = $wpdb->prefix . 'bill_manager_companies';
+
+$sql = "CREATE TABLE {$companies_table} (
+    ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+    ip varchar(45) NOT NULL,
+    user_agent text NOT NULL,
+
+    title varchar(255) NOT NULL,
+    address text NULL,
+    phone varchar(50) NULL,
+    email varchar(255) NULL,
+
+    opening_balance decimal(12,2) NOT NULL DEFAULT 0.00,
+    balance_type enum('debit','credit') NOT NULL DEFAULT 'debit',
+
+    notes text NULL,
+    status tinyint(1) NOT NULL DEFAULT 1,
+
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (ID),
+
+    KEY user_id (user_id),
+    KEY title (title),
+    KEY status (status)
+
+) {$charset_collate};";
+
+dbDelta($sql);
+```
+
+---
+
+# Bills Table
+
+```php
+$bills_table = $wpdb->prefix . 'bill_manager_bills';
+
+$sql = "CREATE TABLE {$bills_table} (
+
+    ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+
+    ip varchar(45) NOT NULL,
+    user_agent text NOT NULL,
+
+    company_id bigint(20) unsigned NOT NULL,
+
+    bill_no varchar(50) NOT NULL,
+
+    bill_type enum('purchase','sale') NOT NULL,
+
+    reference_no varchar(100) NULL,
+
+    bill_date datetime NOT NULL,
+
+    discount decimal(12,2) NOT NULL DEFAULT 0.00,
+    tax decimal(12,2) NOT NULL DEFAULT 0.00,
+    shipping decimal(12,2) NOT NULL DEFAULT 0.00,
+
+    notes text NULL,
+
+    status tinyint(1) NOT NULL DEFAULT 1,
+
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (ID),
+
+    UNIQUE KEY bill_no (bill_no),
+
+    KEY company_id (company_id),
+    KEY bill_type (bill_type),
+    KEY bill_date (bill_date),
+    KEY user_id (user_id),
+    KEY status (status)
+
+) {$charset_collate};";
+
+dbDelta($sql);
+```
+
+---
+
+# Bill Items Table
+
+```php
+$items_table = $wpdb->prefix . 'bill_manager_bill_items';
+
+$sql = "CREATE TABLE {$items_table} (
+
+    ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+
+    ip varchar(45) NOT NULL,
+    user_agent text NOT NULL,
+
+    bill_id bigint(20) unsigned NOT NULL,
+
+    bill_sku varchar(100) NULL,
+
+    title varchar(255) NOT NULL,
+
+    quantity decimal(12,2) NOT NULL DEFAULT 1.00,
+
+    unit varchar(50) NULL,
+
+    unit_price decimal(12,2) NOT NULL DEFAULT 0.00,
+
+    discount decimal(12,2) NOT NULL DEFAULT 0.00,
+
+    tax decimal(12,2) NOT NULL DEFAULT 0.00,
+
+    notes text NULL,
+
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (ID),
+
+    KEY bill_id (bill_id),
+    KEY bill_sku (bill_sku),
+    KEY title (title),
+    KEY user_id (user_id)
+
+) {$charset_collate};";
+
+dbDelta($sql);
+```
+
+---
+
+# Payments Table
+
+```php
+$payments_table = $wpdb->prefix . 'bill_manager_payments';
+
+$sql = "CREATE TABLE {$payments_table} (
+
+    ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+
+    user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+
+    ip varchar(45) NOT NULL,
+    user_agent text NOT NULL,
+
+    bill_id bigint(20) unsigned NOT NULL,
+
+    payment_date datetime NOT NULL,
+
+    paid_amount decimal(12,2) NOT NULL,
+
+    payment_method enum(
+        'cash',
+        'bank',
+        'bkash',
+        'nagad',
+        'rocket',
+        'cheque',
+        'other'
+    ) NOT NULL DEFAULT 'cash',
+
+    reference_no varchar(100) NULL,
+
+    notes text NULL,
+
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (ID),
+
+    KEY bill_id (bill_id),
+    KEY payment_date (payment_date),
+    KEY payment_method (payment_method),
+    KEY user_id (user_id)
+
+) {$charset_collate};";
+
+dbDelta($sql);
+```
+
+---
+
+# Future Tables (Recommended)
+
+I would also leave room in the architecture for these tables if you plan to expand the plugin:
+
+| Table                             | Purpose                                                                       |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| `bill_manager_units`              | Units like kg, pcs, liter, box, carton.                                       |
+| `bill_manager_products`           | Product catalog with SKU, default price, unit, etc.                           |
+| `bill_manager_categories`         | Product categories.                                                           |
+| `bill_manager_expenses`           | Record operational expenses.                                                  |
+| `bill_manager_users` *(optional)* | Sales representatives or staff (if you need metadata beyond WordPress users). |
+
+## One additional recommendation
+
+Instead of using `enum` columns (e.g., `bill_type`, `payment_method`, `balance_type`), I recommend using `VARCHAR` columns with validation in your PHP code. While `ENUM` works in MySQL, it makes future changes (such as adding a new payment method like `card` or `paypal`) require a database migration. A `VARCHAR(20)` or `VARCHAR(30)` column is more flexible and is commonly preferred in WordPress plugin development.
+
+This schema is a solid foundation for a billing system that can later grow into a complete inventory, purchase, and sales management solution without major database redesign.
