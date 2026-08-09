@@ -38,6 +38,8 @@ class BillsController
         $address = sanitize_textarea_field(wp_unslash($request->get_param('address')));
         $phone   = sanitize_text_field(wp_unslash($request->get_param('phone')));
         $email   = sanitize_text_field(wp_unslash($request->get_param('email')));
+        $notes   = sanitize_textarea_field(wp_unslash($request->get_param('notes')));
+        $status  = sanitize_text_field(wp_unslash($request->get_param('status')));
 
         $insert = $wpdb->insert(
             $companies_table,
@@ -49,10 +51,12 @@ class BillsController
                 'address'    => $address,
                 'phone'      => $phone,
                 'email'      => $email,
+                'notes'      => $notes,
+                'status'     => $status,
                 'created_at' => current_time('mysql'),
                 'updated_at' => current_time('mysql'),
             ],
-            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s']
         );
 
         // $wpdb->insert() returns false on failure, or the number of rows affected on success.
@@ -80,7 +84,40 @@ class BillsController
                     'address'    => $address,
                     'phone'      => $phone,
                     'email'      => $email,
+                    'notes'      => $notes,
+                    'status'     => $status,
                 ],
+            ),
+            200
+        );
+    }
+    /**
+     * All companies
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function all_companies(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+        global $wpdb;
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $data_query = $wpdb->prepare(
+            "SELECT * FROM {$companies_table}"
+        );
+
+        $results = $wpdb->get_results($data_query, ARRAY_A);
+
+        return new WP_REST_Response(
+            array(
+                'success'      => true,
+                'data'         => $results,
             ),
             200
         );
@@ -387,6 +424,8 @@ class BillsController
         $address = sanitize_textarea_field(wp_unslash($request->get_param('address')));
         $phone   = sanitize_text_field(wp_unslash($request->get_param('phone')));
         $email   = sanitize_text_field(wp_unslash($request->get_param('email')));
+        $notes   = sanitize_textarea_field(wp_unslash($request->get_param('notes')));
+        $status  = sanitize_text_field(wp_unslash($request->get_param('status')));
 
         $update = $wpdb->update(
             $companies_table,
@@ -398,10 +437,13 @@ class BillsController
                 'address'    => $address,
                 'phone'      => $phone,
                 'email'      => $email,
+                'notes'      => $notes,
+                'status'     => $status,
                 'updated_at' => current_time('mysql'),
             ],
             [ 'ID' => $id ],
-            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s'],
+            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s'],
+
             ['%d']
         );
 
@@ -593,6 +635,37 @@ class BillsController
         );
     }
 
+    /**
+     * All bill
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function all_bills(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+        global $wpdb;
+        $bills_table = $wpdb->prefix . 'bill_manager_bills';
+        $data_query = $wpdb->prepare(
+            "SELECT * FROM {$bills_table}"
+        );
+
+        $results = $wpdb->get_results($data_query, ARRAY_A);
+
+        return new WP_REST_Response(
+            array(
+                'success'      => true,
+                'data'         => $results,
+            ),
+            200
+        );
+    }
 
     /**
      * Create bill
@@ -618,10 +691,21 @@ class BillsController
         $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
 
         $company_id     = sanitize_text_field(wp_unslash($request->get_param('company_id')));
-        $total_amount   = sanitize_text_field(wp_unslash($request->get_param('total_amount')));
+
+        $bill_no     = sanitize_text_field(wp_unslash($request->get_param('bill_no')));
         $bill_type      = sanitize_textarea_field(wp_unslash($request->get_param('bill_type')));
         $bill_date      = sanitize_text_field(wp_unslash($request->get_param('bill_date')));
+        $discount      = sanitize_text_field(wp_unslash($request->get_param('discount')));
+        $ait      = sanitize_text_field(wp_unslash($request->get_param('ait')));
+        $tax      = sanitize_text_field(wp_unslash($request->get_param('tax')));
+        $vat      = sanitize_text_field(wp_unslash($request->get_param('vat')));
+        $shipping      = sanitize_text_field(wp_unslash($request->get_param('shipping')));
+        $status      = sanitize_text_field(wp_unslash($request->get_param('status')));
+        $notes      = sanitize_textarea_field(wp_unslash($request->get_param('notes')));
+
         $bill_items     = map_deep(wp_unslash($request->get_param('bill_items')), 'wp_kses_post');
+
+        $bill_no = $bill_no??'BILL-' . strtoupper(uniqid());
 
         $insert = $wpdb->insert(
             $companies_table,
@@ -630,13 +714,22 @@ class BillsController
                 'ip'            => $ip,
                 'user_agent'    => $user_agent,
                 'company_id'    => $company_id,
-                'total_amount'  => $total_amount,
+
+                'bill_no'       => $bill_no,
                 'bill_type'     => $bill_type,
                 'bill_date'     => $bill_date,
+
+                'discount'      => $discount,
+                'ait'           => $ait,
+                'tax'           => $tax,
+                'vat'           => $vat,
+                'shipping'      => $shipping,
+                'status'        => $status,
+                'notes'         => $notes,
                 'created_at'    => current_time('mysql'),
                 'updated_at'    => current_time('mysql'),
             ],
-            ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+            ['%d', '%s', '%s', '%d', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%s']
         );
 
         // $wpdb->insert() returns false on failure, or the number of rows affected on success.
@@ -666,9 +759,16 @@ class BillsController
                     'ip'            => $ip,
                     'user_agent'    => $user_agent,
                     'company_id'    => $company_id,
-                    'total_amount'  => $total_amount,
+                    'bill_no'       => $bill_no,                    
                     'bill_type'     => $bill_type,
                     'bill_date'     => $bill_date,
+                    'discount'      => $discount,
+                    'ait'           => $ait,
+                    'tax'           => $tax,
+                    'vat'           => $vat,
+                    'shipping'      => $shipping,
+                    'status'        => $status,
+                    'notes'         => $notes,                    
                 ],
             ),
             200
@@ -1075,13 +1175,13 @@ class BillsController
     public static function create_item($items, $bill_id = 0)
     {
         error_log(print_r($items, true));
-        // if (!current_user_can('manage_options')) {
-        //     return new WP_Error(
-        //         'rest_update_error',
-        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
-        //         array('status' => 403)
-        //     );
-        // }
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
 
         global $wpdb;
         $items_table = $wpdb->prefix . 'bill_manager_bill_items';
@@ -1089,19 +1189,6 @@ class BillsController
         $user_id        = get_current_user_id();
         $ip             = Utils::get_client_ip();
         $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
-
-        /*
-        	bill_id bigint(20) NOT NULL,
-			title varchar(255) NOT NULL,
-			quantity bigint(20) NOT NULL,
-			unit varchar(45) NOT NULL,
-			unit_price bigint(20) NOT NULL,
-
-            [title] => Rod
-            [quantity] => 20
-            [unit] => Ton
-            [unit_price] => 79500
-        */
 
         $bill_id     = $bill_id?sanitize_text_field(wp_unslash($bill_id)):'';
         foreach($items as $item) {

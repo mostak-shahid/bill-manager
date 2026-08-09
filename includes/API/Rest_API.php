@@ -379,7 +379,32 @@ class Rest_API
                         'format'            => 'email',
                         'sanitize_callback' => 'sanitize_email',
                     ),
+                    'notes' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
+                    ),
+                    'status'  => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'validate_callback' => function ($param, $request, $key) {
+                            return in_array($param, ['1', '0']);
+                        }
+                    )
                 ),
+            ]
+        );
+
+        // All companies
+        register_rest_route(
+            self::NAMESPACE,
+            '/all-companies',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'all_companies'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
             ]
         );
 
@@ -465,6 +490,18 @@ class Rest_API
                         'format'            => 'email',
                         'sanitize_callback' => 'sanitize_email',
                     ),
+                    'status'  => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'validate_callback' => function ($param, $request, $key) {
+                            return in_array($param, ['1', '0']);
+                        }
+                    ),
+                    'notes' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
+                    ),
                 ),
             ]
         );
@@ -508,6 +545,19 @@ class Rest_API
         );
 
         
+
+        // All bills
+        register_rest_route(
+            self::NAMESPACE,
+            '/all-bills',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'all_bills'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+            ]
+        );
         // Create Bill
         register_rest_route(
             self::NAMESPACE,
@@ -524,6 +574,12 @@ class Rest_API
                         'type'              => 'string',
                         'sanitize_callback' => 'sanitize_text_field',
                     ),
+
+                    'bill_no'   => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
                     'bill_type' => array(
                         'required'          => true,
                         'type'              => 'string',
@@ -533,6 +589,43 @@ class Rest_API
                         'required'          => true,
                         'type'              => 'string',
                         'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'discount' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'ait' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'tax' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'vat' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'shipping' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'status'  => array(
+                        'required'          => false,
+                        'type'              => 'integer',
+                        'validate_callback' => function ($param, $request, $key) {
+                            return in_array($param, [1, 0]);
+                        }
+                    ),
+                    'notes'  => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
                     ),
                     'bill_items'   => array(
                         'required'          => false,

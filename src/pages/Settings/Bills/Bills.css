@@ -1,0 +1,10 @@
+.bills-accordion .accordion-content {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 992px) {
+  .bills-accordion .accordion-content {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}/*# sourceMappingURL=Bills.css.map */

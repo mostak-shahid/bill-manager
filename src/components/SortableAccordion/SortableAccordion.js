@@ -15,6 +15,7 @@ const SortableAccordion = ({
     fields, 
     defaultValues = [], 
     onChange = () => {}, 
+    className = '',
 }) => {
     const sectionsFirstRender = useRef(true);
 
@@ -74,14 +75,7 @@ const SortableAccordion = ({
     return (
         <DndProvider backend={HTML5Backend} context={window}>
             {/* {console.log('component-load:','SortableAccordion is rendered')} */}
-            <div className="accordion-container">
-                <span 
-                    onClick={addSection} 
-                    className="d-inline-block text-decoration-underline mb-3"
-                    role="button"
-                >
-                    {options?.addButton || __("Add New Field", "bill-manager")}
-                </span>
+            <div className={`accordion-container ${className}`}>
                 {sections.map((section, index) => (
                     <DraggableAccordionItem
                         key={section.id}
@@ -94,6 +88,13 @@ const SortableAccordion = ({
                         options={options}
                     />
                 ))}
+                <span 
+                    onClick={addSection} 
+                    className="d-inline-block text-decoration-underline mb-3"
+                    role="button"
+                >
+                    {options?.addButton || __("Add New Field", "bill-manager")}
+                </span>
             </div>
         </DndProvider>
     );
@@ -121,7 +122,7 @@ const DraggableAccordionItem = ({ index, section, fields, moveSection, updateFie
     });
 
     return (
-        <div ref={drop} className="accordion-item border rounded-2 mb-1" style={{ opacity: isDragging ? 0.5 : 1 }}>
+        <div ref={drop} className={`accordion-item border rounded-2 mb-1`} style={{ opacity: isDragging ? 0.5 : 1 }}>
             <div 
                 ref={drag} 
                 className="accordion-header p-2 d-flex align-items-center justify-content-between" 

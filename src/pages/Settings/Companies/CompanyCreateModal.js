@@ -15,6 +15,8 @@ export default function CompanyCreateModal({show, setShow, setReloadTable}) {
     const [address, setAddress] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
+    const [notes, setNotes] = useState('');
+    const [status, setStatus] = useState('1');
 
 
     const [showToast, setShowToast] = useState(false);
@@ -47,7 +49,7 @@ export default function CompanyCreateModal({show, setShow, setReloadTable}) {
                     path: "/bill-manager/v1/companies",
                     method: "POST",
                     data: {
-                        title, address, phone, email
+                        title, address, phone, email, notes, status
                     },
                     headers: {
                         'X-WP-Nonce': bill_manager_ajax_obj.api_nonce
@@ -60,6 +62,7 @@ export default function CompanyCreateModal({show, setShow, setReloadTable}) {
                     setAddress('');
                     setPhone('');
                     setEmail('');
+                    setNotes('');
                     setDataToast({
                         title: __("Success", "bill-manager"),
                         content: __("Company created successfully!", "bill-manager"),
@@ -152,6 +155,36 @@ export default function CompanyCreateModal({show, setShow, setReloadTable}) {
                                 onChange={(e) => setAddress(e.target.value)}
                             />
                         </FloatingLabel>
+
+                        <FloatingLabel
+                            controlId="status"
+                            label={__('Status', 'bill-manager')}
+                            className="mb-3"
+                        >
+                            <Form.Select
+                                // as="select"
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                            >
+                                <option value="1">{__('Active', 'bill-manager')}</option>
+                                <option value="0">{__('Inactive', 'bill-manager')}</option>
+                            </Form.Select>
+                        </FloatingLabel>
+
+                        <FloatingLabel
+                            controlId="notes"
+                            label={__('Notes', 'bill-manager')}
+                            className="mb-3"
+                        >
+                            <Form.Control
+                                as="textarea"
+                                rows={5}
+                                placeholder={__('Notes', 'bill-manager')}
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                            />
+                        </FloatingLabel>
+
                         <Button type="submit" disabled={processing}>
                             {processing ? (
                                 <>

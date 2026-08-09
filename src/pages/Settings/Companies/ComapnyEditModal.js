@@ -15,6 +15,8 @@ export default function ComapnyEditModal({ show, setShow, id, setReloadTable }) 
     const [address, setAddress] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
+    const [notes, setNotes] = useState('');
+    const [status, setStatus] = useState('1');
 
     const [loading, setLoading] = useState(false);
     useEffect(() => {
@@ -28,6 +30,8 @@ export default function ComapnyEditModal({ show, setShow, id, setReloadTable }) 
                 setAddress(response?.data?.address);
                 setPhone(response?.data?.phone);
                 setEmail(response?.data?.email);
+                setNotes(response?.data?.notes);
+                setStatus(response?.data?.status);
             } catch (error) {
                 console.error('Error fetching companies:', error);
             } finally {
@@ -68,7 +72,7 @@ export default function ComapnyEditModal({ show, setShow, id, setReloadTable }) 
                     path: `/bill-manager/v1/company/${id}`,
                     method: "PUT",
                     data: {
-                        title, address, phone, email
+                        title, address, phone, email, notes, status
                     },
                     headers: {
                         'X-WP-Nonce': bill_manager_ajax_obj.api_nonce
@@ -81,6 +85,8 @@ export default function ComapnyEditModal({ show, setShow, id, setReloadTable }) 
                     setAddress('');
                     setPhone('');
                     setEmail('');
+                    setNotes('');
+                    setStatus('1');
                     setDataToast({
                         title: __("Success", "bill-manager"),
                         content: __("Company modified successfully!", "bill-manager"),
@@ -183,6 +189,35 @@ export default function ComapnyEditModal({ show, setShow, id, setReloadTable }) 
                                         placeholder={__('Address', 'bill-manager')}
                                         value={address}
                                         onChange={(e) => setAddress(e.target.value)}
+                                    />
+                                </FloatingLabel>
+
+                                <FloatingLabel
+                                    controlId="status"
+                                    label={__('Status', 'bill-manager')}
+                                    className="mb-3"
+                                >
+                                    <Form.Select
+                                        // as="select"
+                                        value={status}
+                                        onChange={(e) => setStatus(e.target.value)}
+                                    >
+                                        <option value="1">{__('Active', 'bill-manager')}</option>
+                                        <option value="0">{__('Inactive', 'bill-manager')}</option>
+                                    </Form.Select>
+                                </FloatingLabel>
+
+                                <FloatingLabel
+                                    controlId="notes"
+                                    label={__('Notes', 'bill-manager')}
+                                    className="mb-3"
+                                >
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={5}
+                                        placeholder={__('Notes', 'bill-manager')}
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
                                     />
                                 </FloatingLabel>
                                 <Button type="submit" disabled={processing}>

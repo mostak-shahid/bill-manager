@@ -106,46 +106,93 @@ class Activator
 			user_id bigint(20) NOT NULL,
 			ip varchar(45) NOT NULL,
 			user_agent text NOT NULL,
+
 			title varchar(255) NOT NULL,
 			address text NOT NULL,
 			phone varchar(255) NOT NULL,
 			email varchar(255) NOT NULL,
+
+			notes text NULL,
+			status tinyint(1) NOT NULL DEFAULT 1,
+
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY  (ID)
+
+			PRIMARY KEY  (ID),
+
+			KEY user_id (user_id),
+			KEY title (title),
+			KEY status (status)
+
 		) $charset_collate;";
 		dbDelta($companies_sql);
 
 		$bills_table = $wpdb->prefix . 'bill_manager_bills';
 		$bills_sql = "CREATE TABLE $bills_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+
 			user_id bigint(20) NOT NULL,
 			ip varchar(45) NOT NULL,
 			user_agent text NOT NULL,
+
 			company_id bigint(20) NOT NULL,
-			total_amount bigint(20) NOT NULL,
-			bill_type varchar(45) NOT NULL, /*purchase, sell*/ 
-			bill_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+			bill_no varchar(50) NOT NULL,
+			bill_type enum('purchase','sale') NOT NULL,
+			bill_date datetime NOT NULL,
+
+			discount decimal(12,2) NOT NULL DEFAULT 0.00,
+			ait decimal(12,2) NOT NULL DEFAULT 0.00,
+			tax decimal(12,2) NOT NULL DEFAULT 0.00,
+			vat decimal(12,2) NOT NULL DEFAULT 0.00,
+			shipping decimal(12,2) NOT NULL DEFAULT 0.00,
+
+			notes text NULL,
+
+			status tinyint(1) NOT NULL DEFAULT 1,
+
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY  (ID)
+    
+			PRIMARY KEY (ID),
+
+			UNIQUE KEY bill_no (bill_no),
+
+			KEY company_id (company_id),
+			KEY bill_type (bill_type),
+			KEY bill_date (bill_date),
+			KEY user_id (user_id),
+			KEY status (status)
+
 		) $charset_collate;";
 		dbDelta($bills_sql);
 
 		$bill_items_table = $wpdb->prefix . 'bill_manager_bill_items';
 		$bill_items_sql = "CREATE TABLE $bill_items_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+
 			user_id bigint(20) NOT NULL,
 			ip varchar(45) NOT NULL,
 			user_agent text NOT NULL,
-			bill_id bigint(20) NOT NULL,
+
+			bill_id bigint(20) unsigned NOT NULL,
+
 			title varchar(255) NOT NULL,
-			quantity bigint(20) NOT NULL,
-			unit varchar(45) NOT NULL,
-			unit_price bigint(20) NOT NULL,
+			quantity decimal(12,2) NOT NULL DEFAULT 1.00,
+			unit varchar(50) NULL,
+			unit_price decimal(12,2) NOT NULL DEFAULT 0.00,
+
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY  (ID)
+
+			PRIMARY KEY (ID),
+
+			KEY bill_id (bill_id),
+			KEY title (title),
+			KEY user_id (user_id)
+
+			/*
+			*/
 		) $charset_collate;";
 		dbDelta($bill_items_sql);
 		
@@ -155,13 +202,23 @@ class Activator
 			user_id bigint(20) NOT NULL,
 			ip varchar(45) NOT NULL,
 			user_agent text NOT NULL,
-			bill_id bigint(20) NOT NULL,
-			payment_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			paid_amount bigint(20) NOT NULL,
-			paid_by varchar(255) NOT NULL,
+
+			bill_id bigint(20) unsigned NOT NULL,
+			payment_date datetime NOT NULL,
+			paid_amount decimal(12,2) NOT NULL,
+
+			reference_no varchar(100) NULL,
+
+			notes text NULL,
+
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY  (ID)
+
+			PRIMARY KEY (ID),
+
+			KEY bill_id (bill_id),
+			KEY payment_date (payment_date),
+			KEY user_id (user_id)
 		) $charset_collate;";
 		dbDelta($payments_sql);
 	}
