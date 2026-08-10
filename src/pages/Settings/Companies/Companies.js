@@ -282,11 +282,11 @@ const Companies = () => {
     }
     const columns = [
         // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
-        { name: 'Title', id: 'title', selector: row => row.title, sortable: true, pinned: 'left' },
+        { name: 'Title', id: 'c.title', selector: row => row.title, sortable: true, pinned: 'left' },
         { name: 'Balance', id: 'balance_type', selector: row => row.balance_type, sortable: true, hide: 'sm' },
-        { name: 'Phone', id: 'phone', selector: row => row.phone, sortable: true, hide: 'sm' },
-        { name: 'Email', id: 'email', selector: row => row.email, sortable: true, hide: 'md', },
-        { name: 'Address', id: 'address', selector: row => row.address, sortable: true, hide: 'lg', },
+        { name: 'Phone', id: 'c.phone', selector: row => row.phone, sortable: true, hide: 'sm' },
+        { name: 'Email', id: 'c.email', selector: row => row.email, sortable: true, hide: 'md', },
+        { name: 'Address', id: 'c.address', selector: row => row.address, sortable: true, hide: 'lg', },
 
         // {
         //     name: 'User',
@@ -300,7 +300,7 @@ const Companies = () => {
         // { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, omit: true },
         // // { name: 'Description', id: 'description', selector: row => row.description, sortable: true, omit: true },
         // { name: 'User Agent', id: 'user_agent', selector: row => row.user_agent, sortable: true, omit: true },
-        { name: 'Added', id: 'created_at', selector: row => row.created_at, sortable: true, hide: 'sm'},
+        { name: 'Added', id: 'c.created_at', selector: row => row.created_at, sortable: true, hide: 'sm'},
         {
             name: 'Action',
             cell: (row) => (
