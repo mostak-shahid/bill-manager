@@ -284,7 +284,7 @@ class BillsController
         $order   = strtoupper($request->get_param('sort_order')) == 'ASC' ? 'ASC' : 'DESC';
 
         // Allowed order by columns
-        $allowed_orderby = array('c.ID', 'c.title', 'c.address', 'c.phone', 'c.email', 'sale', 'purchase', 'sale_paid', 'purchase_paid', 'receivable', 'payable', 'balance');
+        $allowed_orderby = array('c.ID', 'c.title', 'c.address', 'c.phone', 'c.email', 'sale', 'purchase', 'sale_paid', 'purchase_paid', 'receivable', 'payable', 'balance', 'balance_type', 'c.created_at');
         if (! in_array($orderby, $allowed_orderby, true)) {
             $orderby = 'c.ID';
         }
@@ -355,7 +355,7 @@ class BillsController
          */
         $sql_base = "
             SELECT
-                c.ID AS id,
+                c.ID,
                 c.title,
                 c.address,
                 c.phone,

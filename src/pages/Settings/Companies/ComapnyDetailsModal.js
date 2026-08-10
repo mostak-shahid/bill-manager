@@ -1,7 +1,7 @@
 import { __ } from "@wordpress/i18n";
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Modal, Spinner } from 'react-bootstrap';
+import { Row, Col, Button, Modal, Spinner, Card } from 'react-bootstrap';
 
 export default function ComapnyDetailsModal({ show, setShow, id }) {
     // const [show, setShow] = useState(false);
@@ -25,10 +25,17 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
         };
         fetchData();
     }, [id]);
+    const customCardStyle = {
+        width: '100%',
+        padding: '0px',
+        margin: '0px',
+        maxWidth: 'unset',
+        minHeight: '100%',
+    };
     return (
         <>
 
-            <Modal size="lg" show={show} onHide={handleClose}>
+            <Modal size="xl" show={show} onHide={handleClose}>
                 {/* {console.log(dataDetailsModal)} */}
                 <Modal.Header closeButton>
                     <Modal.Title>{__('Company details', 'bill-manager')}</Modal.Title>
@@ -46,12 +53,142 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                         </>
                     ) : (
                         <>
-                            <ul className="list-unstyled">
-                                <li>{__('Title', 'bill-manager')}: {dataDetailsModal?.title}</li>
-                                <li>{__('Phone', 'bill-manager')}: {dataDetailsModal?.phone}</li>
-                                <li>{__('Email', 'bill-manager')}: {dataDetailsModal?.email}</li>
-                                <li>{__('Address', 'bill-manager')}: {dataDetailsModal?.address}</li>
-                            </ul>
+                            <Row className="align-items-stretch">
+                                <Col lg={8} md={6} className="mb-3">
+                                    <Card
+                                        // bg={variant.toLowerCase()}
+                                        bg='light'
+                                        // key={variant}
+                                        // text={variant.toLowerCase() === 'light' ? 'dark' : 'white'}
+                                        text='dark'
+                                        style={customCardStyle}
+                                        // className="mb-2"
+                                    >
+                                        <Card.Header>{__('Company Information', 'bill-manager')}</Card.Header>
+                                        <Card.Body>
+                                            <Card.Title>{dataDetailsModal?.title}</Card.Title>
+                                            <Card.Text>
+                                                <ul className="list-unstyled">
+                                                    {/* <li>{__('Title', 'bill-manager')}: {dataDetailsModal?.title}</li> */}
+                                                    <li>{__('Phone', 'bill-manager')}: {dataDetailsModal?.phone}</li>
+                                                    <li>{__('Email', 'bill-manager')}: {dataDetailsModal?.email}</li>
+                                                    <li>{__('Address', 'bill-manager')}: {dataDetailsModal?.address}</li>
+                                                </ul>
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Header>{__('Balance', 'bill-manager')}</Card.Header>
+                                        <Card.Body>
+                                            <Card.Title>{__('Receivable', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+                            <h6 className="h6">{__('Financial Summary', 'bill-manager')}</h6>
+                            <Row className="align-items-stretch">
+
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{__('Total Sales ', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{__('Received', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{__('Receivable', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+                            <Row className="align-items-stretch">
+
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{__('Purchases', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{__('Paid', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='success'
+                                        text='light'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{__('Payable', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                ৳60,000
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+
+                            <h6 className="h6">{__('Recent Bills', 'bill-manager')}</h6>
+                            <h6 className="h6">{__('Recent Payments', 'bill-manager')}</h6>
+
                             <hr />
                             <h6 className="h6">{__('User Details', 'bill-manager')}</h6>
                             <ul className="list-unstyled">

@@ -283,7 +283,7 @@ const Companies = () => {
     const columns = [
         // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
         { name: 'Title', id: 'c.title', selector: row => row.title, sortable: true, pinned: 'left' },
-        { name: 'Balance', id: 'balance_type', selector: row => row.balance_type, sortable: true, hide: 'sm' },
+        { name: 'Balance', id: 'balance', selector: row => row.balance, sortable: true, hide: 'sm' },
         { name: 'Phone', id: 'c.phone', selector: row => row.phone, sortable: true, hide: 'sm' },
         { name: 'Email', id: 'c.email', selector: row => row.email, sortable: true, hide: 'md', },
         { name: 'Address', id: 'c.address', selector: row => row.address, sortable: true, hide: 'lg', },
@@ -362,6 +362,22 @@ const Companies = () => {
             </>
         );
     };
+
+    const conditionalRowStyles = [
+        {
+            when: row => row.balance_type === 'receivable',
+            style: { backgroundColor: '#d4edda' }, // Light Green
+        },
+        {
+            when: row => row.balance_type === 'payable',
+            style: { backgroundColor: '#f8d7da' }, // Light Red
+        },
+        {
+            when: row => row.balance_type === 'settled',
+            style: { backgroundColor: '#ffffff' }, // Light Gray
+        },
+    ];
+
     return (
         <>
             <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
@@ -472,6 +488,7 @@ const Companies = () => {
                     expandableRowsComponent={ExpandedComponent}
                     responsive
                     resizable
+                    conditionalRowStyles={conditionalRowStyles}
                 // customStyles={customStyles}
                 />
 
