@@ -144,7 +144,7 @@ class BillsController
         $page     = max(1, (int) $request->get_param('page'));
         $per_page = max(1, (int) $request->get_param('per_page'));
         $search   = trim((string) $request->get_param('search'));
-        $filter    = $request->get_param('filter');
+        $filter   = $request->get_param('filter');
 
         $date_from = $request->get_param('date_from');
         $date_to   = $request->get_param('date_to');
@@ -160,30 +160,26 @@ class BillsController
 
         $offset = ($page - 1) * $per_page;
 
-        $join            = '';
-        $where_clauses   = array('1=1');
-        $search_clauses  = array();
-
         /**
-         * Search billic
+         * Build unified where clause and joins
          */
+        $prepared_where = '1=1';
+        $where_params   = array();
+        $join_users     = '';
+
         if ($search !== '') {
-            $join = "LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID";
-
+            $join_users = "LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID";
             $like = '%' . $wpdb->esc_like($search) . '%';
-
-            $search_clauses[] = $wpdb->prepare('u.display_name LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('l.ip LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('l.title LIKE %s', $like);
+            $prepared_where .= " AND (u.display_name LIKE %s OR c.ip LIKE %s OR c.title LIKE %s)";
+            $where_params[] = $like;
+            $where_params[] = $like;
+            $where_params[] = $like;
 
             // Date search only if valid YYYY-MM-DD
             if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
-                $search_clauses[] = $wpdb->prepare('DATE(l.created_at) = %s', $search);
+                $prepared_where .= " OR DATE(c.created_at) = %s";
+                $where_params[] = $search;
             }
-        }
-
-        if (! empty($search_clauses)) {
-            $where_clauses[] = '(' . implode(' OR ', $search_clauses) . ')';
         }
 
         /**
@@ -191,18 +187,17 @@ class BillsController
          */
         if (! empty($filter) && $filter !== 'any') {
             $current_date = gmdate('Y-m-d');
-            switch ($filter) {
-                case 'today':
-                    $where_clauses[] = $wpdb->prepare('DATE(l.created_at) = %s', $current_date);
-                    break;
-                case 'week':
-                    $week_start = gmdate('Y-m-d', strtotime('this week monday'));
-                    $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', $week_start);
-                    break;
-                case 'month':
-                    $month_start = gmdate('Y-m-01');
-                    $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', $month_start);
-                    break;
+            if ($filter === 'today') {
+                $prepared_where .= " AND DATE(c.created_at) = %s";
+                $where_params[] = $current_date;
+            } elseif ($filter === 'week') {
+                $week_start = gmdate('Y-m-d', strtotime('this week monday'));
+                $prepared_where .= " AND DATE(c.created_at) >= %s";
+                $where_params[] = $week_start;
+            } elseif ($filter === 'month') {
+                $month_start = gmdate('Y-m-01');
+                $prepared_where .= " AND DATE(c.created_at) >= %s";
+                $where_params[] = $month_start;
             }
         }
 
@@ -210,57 +205,12 @@ class BillsController
          * Date range filter
          */
         if (! empty($date_from)) {
-            $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', sanitize_text_field($date_from));
-        }
-
-        if (! empty($date_to)) {
-            $where_clauses[] = $wpdb->prepare('DATE(l.created_at) <= %s', sanitize_text_field($date_to));
-        }
-
-        /**
-         * Build prepared where clause with placeholders
-         */
-        $prepared_where = '1=1';
-        $where_params = array();
-
-        if ($search !== '') {
-            $join = "LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID";
-            $like = '%' . $wpdb->esc_like($search) . '%';
-            $prepared_where .= " AND (u.display_name LIKE %s OR l.ip LIKE %s OR l.title LIKE %s";
-            $where_params[] = $like;
-            $where_params[] = $like;
-            $where_params[] = $like;
-
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
-                $prepared_where .= " OR DATE(l.created_at) = %s";
-                $where_params[] = $search;
-            }
-            $prepared_where .= ')';
-        }
-
-        if (! empty($filter) && $filter !== 'any') {
-            $current_date = gmdate('Y-m-d');
-            if ($filter === 'today') {
-                $prepared_where .= " AND DATE(l.created_at) = %s";
-                $where_params[] = $current_date;
-            } elseif ($filter === 'week') {
-                $week_start = gmdate('Y-m-d', strtotime('this week monday'));
-                $prepared_where .= " AND DATE(l.created_at) >= %s";
-                $where_params[] = $week_start;
-            } elseif ($filter === 'month') {
-                $month_start = gmdate('Y-m-01');
-                $prepared_where .= " AND DATE(l.created_at) >= %s";
-                $where_params[] = $month_start;
-            }
-        }
-
-        if (! empty($date_from)) {
-            $prepared_where .= " AND DATE(l.created_at) >= %s";
+            $prepared_where .= " AND DATE(c.created_at) >= %s";
             $where_params[] = sanitize_text_field($date_from);
         }
 
         if (! empty($date_to)) {
-            $prepared_where .= " AND DATE(l.created_at) <= %s";
+            $prepared_where .= " AND DATE(c.created_at) <= %s";
             $where_params[] = sanitize_text_field($date_to);
         }
 
@@ -269,8 +219,8 @@ class BillsController
          */
         $count_query = $wpdb->prepare(
             "SELECT COUNT(*)
-            FROM {$companies_table} l
-            {$join}
+            FROM {$companies_table} c
+            {$join_users}
             WHERE {$prepared_where}",
             ...$where_params
         );
@@ -278,20 +228,16 @@ class BillsController
         $total = (int) $wpdb->get_var($count_query);
 
         /**
-         * Data query - add per_page and offset to params
+         * Data query
          */
-        $data_query_params = $where_params;
-        $data_query_params[] = $per_page;
-        $data_query_params[] = $offset;
-
         $data_query = $wpdb->prepare(
             "SELECT c.*, u.display_name AS user_name, u.user_login, u.user_email
             FROM {$companies_table} c
-            LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID
+            {$join_users}
             WHERE {$prepared_where}
-            ORDER BY {$orderby} {$order}
+            ORDER BY c.{$orderby} {$order}
             LIMIT %d OFFSET %d",
-            ...$data_query_params
+            ...array_merge($where_params, array($per_page, $offset))
         );
 
         $results = $wpdb->get_results($data_query, ARRAY_A);
@@ -310,6 +256,7 @@ class BillsController
     }
 
 
+
     /**
      * Get companies with filtering
      *
@@ -318,13 +265,6 @@ class BillsController
      */
     public static function get_companies_with_transactions(WP_REST_Request $request)
     {
-        // if (!current_user_can('manage_options')) {
-        //     return new WP_Error(
-        //         'rest_update_error',
-        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
-        //         array('status' => 403)
-        //     );
-        // }
         global $wpdb;
 
         $companies_table = $wpdb->prefix . 'bill_manager_companies';
@@ -335,90 +275,35 @@ class BillsController
         $page     = max(1, (int) $request->get_param('page'));
         $per_page = max(1, (int) $request->get_param('per_page'));
         $search   = trim((string) $request->get_param('search'));
-        $filter    = $request->get_param('filter');
+        $filter   = $request->get_param('filter');
+        $balance_type_filter = $request->get_param('balance_type');
 
         $date_from = $request->get_param('date_from');
         $date_to   = $request->get_param('date_to');
 
-        $orderby = $request->get_param('sort_field')??'c.ID';
+        $orderby = $request->get_param('sort_field') ?? 'c.ID';
         $order   = strtoupper($request->get_param('sort_order')) == 'ASC' ? 'ASC' : 'DESC';
 
         // Allowed order by columns
-        $allowed_orderby = array('c.ID', 'c.title', 'c.address', 'c.phone', 'c.email', );
+        $allowed_orderby = array('c.ID', 'c.title', 'c.address', 'c.phone', 'c.email', 'sale', 'purchase', 'sale_paid', 'purchase_paid', 'receivable', 'payable', 'balance');
         if (! in_array($orderby, $allowed_orderby, true)) {
             $orderby = 'c.ID';
         }
 
         $offset = ($page - 1) * $per_page;
 
-        $join            = '';
-        $where_clauses   = array('1=1');
-        $search_clauses  = array();
-
         /**
-         * Search companies
-         */
-        if ($search !== '') {
-            $join = "LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID";
-
-            $like = '%' . $wpdb->esc_like($search) . '%';
-
-            $search_clauses[] = $wpdb->prepare('c.title LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('c.address LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('c.phone LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('c.email LIKE %s', $like);
-
-            // Date search only if valid YYYY-MM-DD
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
-                $search_clauses[] = $wpdb->prepare('DATE(c.created_at) = %s', $search);
-            }
-        }
-
-        if (! empty($search_clauses)) {
-            $where_clauses[] = '(' . implode(' OR ', $search_clauses) . ')';
-        }
-
-        /**
-         * Time-based filter (today, week, month)
-         */
-        if (! empty($filter) && $filter !== 'any') {
-            $current_date = gmdate('Y-m-d');
-            switch ($filter) {
-                case 'today':
-                    $where_clauses[] = $wpdb->prepare('DATE(c.created_at) = %s', $current_date);
-                    break;
-                case 'week':
-                    $week_start = gmdate('Y-m-d', strtotime('this week monday'));
-                    $where_clauses[] = $wpdb->prepare('DATE(c.created_at) >= %s', $week_start);
-                    break;
-                case 'month':
-                    $month_start = gmdate('Y-m-01');
-                    $where_clauses[] = $wpdb->prepare('DATE(c.created_at) >= %s', $month_start);
-                    break;
-            }
-        }
-
-        /**
-         * Date range filter
-         */
-        if (! empty($date_from)) {
-            $where_clauses[] = $wpdb->prepare('DATE(c.created_at) >= %s', sanitize_text_field($date_from));
-        }
-
-        if (! empty($date_to)) {
-            $where_clauses[] = $wpdb->prepare('DATE(c.created_at) <= %s', sanitize_text_field($date_to));
-        }
-
-        /**
-         * Build prepared where clause with placeholders
+         * Build unified where clause and joins
          */
         $prepared_where = '1=1';
-        $where_params = array();
+        $where_params   = array();
+        $join_users     = '';
 
         if ($search !== '') {
-            $join = "LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID";
+            $join_users = "LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID";
             $like = '%' . $wpdb->esc_like($search) . '%';
-            $prepared_where .= " AND (u.display_name LIKE %s OR c.address LIKE %s OR c.phone LIKE %s OR c.email LIKE %s";
+            $prepared_where .= " AND (u.display_name LIKE %s OR c.title LIKE %s OR  c.address LIKE %s OR c.phone LIKE %s OR c.email LIKE %s)";
+            $where_params[] = $like;
             $where_params[] = $like;
             $where_params[] = $like;
             $where_params[] = $like;
@@ -428,7 +313,6 @@ class BillsController
                 $prepared_where .= " OR DATE(c.created_at) = %s";
                 $where_params[] = $search;
             }
-            $prepared_where .= ')';
         }
 
         if (! empty($filter) && $filter !== 'any') {
@@ -458,27 +342,19 @@ class BillsController
         }
 
         /**
-         * Total count query
+         * Build HAVING clause for balance_type
          */
-        $count_query = $wpdb->prepare(
-            "SELECT COUNT(*)
-            FROM {$companies_table} c
-            {$join}
-            WHERE {$prepared_where}",
-            ...$where_params
-        );
-
-        $total = (int) $wpdb->get_var($count_query);
+        $having_clause = '';
+        $having_params = array();
+        if (!empty($balance_type_filter) && in_array($balance_type_filter, ['receivable', 'payable', 'settled'])) {
+            $having_clause = "HAVING balance_type = %s";
+            $having_params[] = $balance_type_filter;
+        }
 
         /**
-         * Data query - add per_page and offset to params
+         * Main Query to calculate amounts
          */
-        $data_query_params = $where_params;
-        $data_query_params[] = $per_page;
-        $data_query_params[] = $offset;
-
-
-        $data_query = $wpdb->prepare("
+        $sql_base = "
             SELECT
                 c.ID AS id,
                 c.title,
@@ -486,179 +362,58 @@ class BillsController
                 c.phone,
                 c.email,
                 c.created_at,
-
-                /* -------------------------
-                * Sales
-                * ------------------------- */
                 COALESCE(sales.sale_amount, 0) AS sale,
-
-                /* -------------------------
-                * Purchases
-                * ------------------------- */
                 COALESCE(purchases.purchase_amount, 0) AS purchase,
-
-                /* -------------------------
-                * Payments received
-                * ------------------------- */
                 COALESCE(sale_payments.sale_paid, 0) AS sale_paid,
-
-                /* -------------------------
-                * Payments made
-                * ------------------------- */
-                COALESCE(purchase_payments.purchase_paid, 0) AS purchase_paid
-
+                COALESCE(purchase_payments.purchase_paid, 0) AS purchase_paid,
+                (COALESCE(sales.sale_amount, 0) - COALESCE(sale_payments.sale_paid, 0)) AS receivable,
+                (COALESCE(purchases.purchase_amount, 0) - COALESCE(purchase_payments.purchase_paid, 0)) AS payable,
+                ((COALESCE(sales.sale_amount, 0) - COALESCE(sale_payments.sale_paid, 0)) - (COALESCE(purchases.purchase_amount, 0) - COALESCE(purchase_payments.purchase_paid, 0))) AS balance,
+                CASE
+                    WHEN ((COALESCE(sales.sale_amount, 0) - COALESCE(sale_payments.sale_paid, 0)) - (COALESCE(purchases.purchase_amount, 0) - COALESCE(purchase_payments.purchase_paid, 0))) > 0 THEN 'receivable'
+                    WHEN ((COALESCE(sales.sale_amount, 0) - COALESCE(sale_payments.sale_paid, 0)) - (COALESCE(purchases.purchase_amount, 0) - COALESCE(purchase_payments.purchase_paid, 0))) < 0 THEN 'payable'
+                    ELSE 'settled'
+                END AS balance_type
             FROM {$companies_table} c
-
-            /* =====================================
-            * SALES
-            * ===================================== */
-            LEFT JOIN (
-
-                SELECT
-                    b.company_id,
-                    SUM(
-                        bi.quantity * bi.unit_price
-                        
-                    ) AS sale_amount
-
-                FROM {$bills_table} b
-
-                INNER JOIN {$items_table} bi
-                    ON bi.bill_id = b.ID
-
-                WHERE b.bill_type = 'sale'
-
-                GROUP BY b.company_id
-
-            ) sales
-                ON sales.company_id = c.ID
-
-
-            /* =====================================
-            * PURCHASES
-            * ===================================== */
-            LEFT JOIN (
-
-                SELECT
-                    b.company_id,
-                    SUM(
-                        bi.quantity * bi.unit_price
-                        
-                    ) AS purchase_amount
-
-                FROM {$bills_table} b
-
-                INNER JOIN {$items_table} bi
-                    ON bi.bill_id = b.ID
-
-                WHERE b.bill_type = 'purchase'
-
-                GROUP BY b.company_id
-
-            ) purchases
-                ON purchases.company_id = c.ID
-
-
-            /* =====================================
-            * SALE PAYMENTS
-            * Money received from customer
-            * ===================================== */
-            LEFT JOIN (
-
-                SELECT
-                    b.company_id,
-                    SUM(p.paid_amount) AS sale_paid
-
-                FROM {$payments_table} p
-
-                INNER JOIN {$bills_table} b
-                    ON b.ID = p.bill_id
-
-                WHERE b.bill_type = 'sale'
-
-                GROUP BY b.company_id
-
-            ) sale_payments
-                ON sale_payments.company_id = c.ID
-
-
-            /* =====================================
-            * PURCHASE PAYMENTS
-            * Money paid to supplier
-            * ===================================== */
-            LEFT JOIN (
-
-                SELECT
-                    b.company_id,
-                    SUM(p.paid_amount) AS purchase_paid
-
-                FROM {$payments_table} p
-
-                INNER JOIN {$bills_table} b
-                    ON b.ID = p.bill_id
-
-                WHERE b.bill_type = 'purchase'
-
-                GROUP BY b.company_id
-
-            ) purchase_payments
-                ON purchase_payments.company_id = c.ID
-
+            {$join_users}
+            LEFT JOIN (SELECT b.company_id, SUM(bi.quantity * bi.unit_price) AS sale_amount FROM {$bills_table} b INNER JOIN {$items_table} bi ON bi.bill_id = b.ID WHERE b.bill_type = 'sale' GROUP BY b.company_id) sales ON sales.company_id = c.ID
+            LEFT JOIN (SELECT b.company_id, SUM(bi.quantity * bi.unit_price) AS purchase_amount FROM {$bills_table} b INNER JOIN {$items_table} bi ON bi.bill_id = b.ID WHERE b.bill_type = 'purchase' GROUP BY b.company_id) purchases ON purchases.company_id = c.ID
+            LEFT JOIN (SELECT b.company_id, SUM(p.paid_amount) AS sale_paid FROM {$payments_table} p INNER JOIN {$bills_table} b ON b.ID = p.bill_id WHERE b.bill_type = 'sale' GROUP BY b.company_id) sale_payments ON sale_payments.company_id = c.ID
+            LEFT JOIN (SELECT b.company_id, SUM(p.paid_amount) AS purchase_paid FROM {$payments_table} p INNER JOIN {$bills_table} b ON b.ID = p.bill_id WHERE b.bill_type = 'purchase' GROUP BY b.company_id) purchase_payments ON purchase_payments.company_id = c.ID
             WHERE {$prepared_where}
-            LIMIT %d OFFSET %d",
-            ...$data_query_params
-        );
-        //ORDER BY l.{$orderby} {$order}
+            GROUP BY c.ID
+            {$having_clause}
+        ";
 
-        $results = $wpdb->get_results( $data_query, ARRAY_A );
+        /**
+         * Total count query
+         */
+        $count_sql = "SELECT COUNT(*) FROM (" . $sql_base . ") AS temp_table";
+        $total = (int) $wpdb->get_var($wpdb->prepare($count_sql, array_merge($where_params, $having_params)));
+
+        /**
+         * Data query
+         */
+        $data_query = $sql_base . " ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d";
+        $data_query_params = array_merge($where_params, $having_params, array($per_page, $offset));
+        
+        $results = $wpdb->get_results($wpdb->prepare($data_query, ...$data_query_params), ARRAY_A);
 
         if ( ! $results ) {
             return rest_ensure_response( [] );
         }
 
+        // Format results
         foreach ( $results as &$company ) {
-
-            $sale          = (float) $company['sale'];
-            $purchase      = (float) $company['purchase'];
-            $sale_paid     = (float) $company['sale_paid'];
-            $purchase_paid = (float) $company['purchase_paid'];
-
-            /*
-            * Money ABC still owes us.
-            */
-            $receivable = $sale - $sale_paid;
-
-            /*
-            * Money we still owe ABC.
-            */
-            $payable = $purchase - $purchase_paid;
-
-            /*
-            * Positive = ABC owes us.
-            * Negative = we owe ABC.
-            */
-            $balance = $receivable - $payable;
-
-            $company['sale']           = number_format( $sale, 2, '.', '' );
-            $company['purchase']       = number_format( $purchase, 2, '.', '' );
-            $company['sale_paid']      = number_format( $sale_paid, 2, '.', '' );
-            $company['purchase_paid']  = number_format( $purchase_paid, 2, '.', '' );
-            $company['receivable']     = number_format( max( $receivable, 0 ), 2, '.', '' );
-            $company['payable']        = number_format( max( $payable, 0 ), 2, '.', '' );
-            $company['balance']        = number_format( abs( $balance ), 2, '.', '' );
-
-            if ( $balance > 0 ) {
-                $company['balance_type'] = 'receivable';
-            } elseif ( $balance < 0 ) {
-                $company['balance_type'] = 'payable';
-            } else {
-                $company['balance_type'] = 'settled';
-            }
+            $company['sale']           = number_format( (float)$company['sale'], 2, '.', '' );
+            $company['purchase']       = number_format( (float)$company['purchase'], 2, '.', '' );
+            $company['sale_paid']      = number_format( (float)$company['sale_paid'], 2, '.', '' );
+            $company['purchase_paid']  = number_format( (float)$company['purchase_paid'], 2, '.', '' );
+            $company['receivable']     = number_format( max( (float)$company['receivable'], 0 ), 2, '.', '' );
+            $company['payable']        = number_format( max( (float)$company['payable'], 0 ), 2, '.', '' );
+            $company['balance']        = number_format( abs( (float)$company['balance'] ), 2, '.', '' );
         }
 
-        // $results = $wpdb->get_results($sql, ARRAY_A);
-
-        // return rest_ensure_response($results);
         return new WP_REST_Response(
             array(
                 'success'      => true,
@@ -671,6 +426,7 @@ class BillsController
             200
         );
     }
+
 
     /**
      * Get company by id
