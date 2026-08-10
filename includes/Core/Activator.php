@@ -103,6 +103,7 @@ class Activator
 		$companies_table = $wpdb->prefix . 'bill_manager_companies';
 		$companies_sql = "CREATE TABLE $companies_table (
 			ID bigint(20) NOT NULL AUTO_INCREMENT,
+			
 			user_id bigint(20) NOT NULL,
 			ip varchar(45) NOT NULL,
 			user_agent text NOT NULL,

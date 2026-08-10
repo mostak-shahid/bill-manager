@@ -61,12 +61,15 @@ class CLI_Command {
             $user_id = rand( 1, 10 );
             $ip = $this->generate_random_ip();
             $user_agent = $this->generate_random_user_agent();
-            $created_at = $this->generate_random_date_last_10_days();
+            $created_at = $this->generate_random_date($last_days = 90);
             
             $title = $this->generate_lorem_title();
             $address = $this->generate_random_address();
             $phone = $this->generate_random_phone();
             $email = $this->generate_random_email();
+
+            $notes = "Sample notes for company {$title}. This is a randomly generated entry for testing purposes.";
+            $status = rand( 0, 1 );
 
             $insert = $wpdb->insert(
                 $companies_table,
@@ -74,14 +77,33 @@ class CLI_Command {
                     'user_id'    => $user_id,
                     'ip'         => $ip,
                     'user_agent' => $user_agent,
+
                     'title'      => $title,
                     'address'    => $address,
                     'phone'      => $phone,
                     'email'      => $email,
-                    'created_at' => current_time('mysql'),
-                    'updated_at' => current_time('mysql'),
+                    'notes'      => $notes,
+                    'status'     => $status,
+
+                    'created_at' => $created_at,
+                    'updated_at' => $created_at,
                 ],
-                ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+                [
+                    '%d', // user_id
+                    '%s', // ip
+                    '%s', // user_agent
+
+                    '%s', // title
+                    '%s', // address
+                    '%s', // phone
+                    '%s', // email
+                    '%s', // notes
+                    '%d', // status
+
+                    '%s', // created_at
+                    '%s', // updated_at
+                ]
+
             );
 
             if ( $insert ) {
@@ -152,7 +174,7 @@ class CLI_Command {
             $user_id = rand( 1, 10 );
             $ip = $this->generate_random_ip();
             $user_agent = $this->generate_random_user_agent();
-            $created_at = $this->generate_random_date_last_10_days();
+            $created_at = $this->generate_random_date($last_days = 10);
             
             $title = $this->generate_lorem_title();
             $description = $this->generate_lorem_description();
@@ -380,15 +402,15 @@ class CLI_Command {
      *
      * @return string Date in MySQL format (Y-m-d H:i:s)
      */
-    private function generate_random_date_last_10_days() {
+    private function generate_random_date($last_days = 10) {
         // Get current timestamp
         $now = current_time( 'timestamp' );
         
-        // Calculate 10 days ago in seconds (10 days * 24 hours * 60 minutes * 60 seconds)
-        $ten_days_ago = $now - ( 10 * 24 * 60 * 60 );
+        // Calculate $last_days ago in seconds ($last_days days * 24 hours * 60 minutes * 60 seconds)
+        $days_ago = $now - ( $last_days * 24 * 60 * 60 );
         
-        // Generate random timestamp between 10 days ago and now
-        $random_timestamp = rand( $ten_days_ago, $now );
+        // Generate random timestamp between $last_days ago and now
+        $random_timestamp = rand( $days_ago, $now );
         
         // Convert to MySQL datetime format
         return date( 'Y-m-d H:i:s', $random_timestamp );
