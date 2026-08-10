@@ -66,7 +66,7 @@ export default function PaymentCreateModal({ show, setShow, setReloadTable }) {
             setProcessing(true);
             try {
                 const result = await apiFetch({
-                    path: "/bill-manager/v1/bill",
+                    path: "/bill-manager/v1/payment",
                     method: "POST",
                     data: {
                         bill_id: billID,

@@ -1170,7 +1170,7 @@ class BillsController
 
 
     /**
-     * Create bill
+     * Create items
      */
     public static function create_item($items, $bill_id = 0)
     {
@@ -1250,5 +1250,119 @@ class BillsController
         //     ),
         //     200
         // );
+    }
+
+    /**
+     * All payments
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function all_payments(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+        global $wpdb;
+        $payments_table = $wpdb->prefix . 'bill_manager_payments';
+        $data_query = $wpdb->prepare(
+            "SELECT * FROM {$payments_table}"
+        );
+
+        $results = $wpdb->get_results($data_query, ARRAY_A);
+
+        return new WP_REST_Response(
+            array(
+                'success'      => true,
+                'data'         => $results,
+            ),
+            200
+        );
+    }
+
+
+    /**
+     * Create payment
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function create_payment(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+        $payments_table = $wpdb->prefix . 'bill_manager_payments';
+
+        $user_id        = get_current_user_id();
+        $ip             = Utils::get_client_ip();
+        $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+        
+
+        $bill_id     = sanitize_text_field(wp_unslash($request->get_param('bill_id')));
+        $payment_date      = sanitize_text_field(wp_unslash($request->get_param('payment_date')));
+        $paid_amount      = sanitize_text_field(wp_unslash($request->get_param('paid_amount')));
+        $reference_no      = sanitize_text_field(wp_unslash($request->get_param('reference_no')));
+        $notes      = sanitize_textarea_field(wp_unslash($request->get_param('notes')));
+
+        $insert = $wpdb->insert(
+            $payments_table,
+            [
+                'user_id'       => $user_id,
+                'ip'            => $ip,
+                'user_agent'    => $user_agent,
+
+                'bill_id'       => $bill_id,
+                'payment_date'  => $payment_date,
+                'paid_amount'   => $paid_amount,
+                'reference_no'  => $reference_no,                
+                'notes'         => $notes,
+
+                'created_at'    => current_time('mysql'),
+                'updated_at'    => current_time('mysql'),
+            ],
+            ['%d', '%s', '%s', '%d', '%s', '%f', '%s', '%s', '%s', '%s']
+        );
+
+        // $wpdb->insert() returns false on failure, or the number of rows affected on success.
+        if ($insert === false) {
+            return new WP_Error(
+                'rest_insert_error',
+                'An error occurred while saving the payment. Please try again.',
+                array(
+                    'status'   => 500,
+                    'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
+                )
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => 'Payment created successfully.',
+                'data'    => [
+                    'id'            => $wpdb->insert_id,
+                    'user_id'       => $user_id,
+                    'ip'            => $ip,
+                    'user_agent'    => $user_agent,
+                    'bill_id'       => $bill_id,
+                    'payment_date'  => $payment_date,
+                    'paid_amount'   => $paid_amount,
+                    'reference_no'  => $reference_no,
+                    'notes'         => $notes,                    
+                ],
+            ),
+            200
+        );
     }
 }
