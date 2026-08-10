@@ -309,6 +309,213 @@ class BillsController
         );
     }
 
+
+    /**
+     * Get companies with filtering
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_companies_with_transactions(WP_REST_Request $request)
+    {
+        // if (!current_user_can('manage_options')) {
+        //     return new WP_Error(
+        //         'rest_update_error',
+        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
+        //         array('status' => 403)
+        //     );
+        // }
+        global $wpdb;
+
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
+
+        $sql = "
+            SELECT
+                c.ID AS id,
+                c.title,
+
+                /* -------------------------
+                * Sales
+                * ------------------------- */
+                COALESCE(sales.sale_amount, 0) AS sale,
+
+                /* -------------------------
+                * Purchases
+                * ------------------------- */
+                COALESCE(purchases.purchase_amount, 0) AS purchase,
+
+                /* -------------------------
+                * Payments received
+                * ------------------------- */
+                COALESCE(sale_payments.sale_paid, 0) AS sale_paid,
+
+                /* -------------------------
+                * Payments made
+                * ------------------------- */
+                COALESCE(purchase_payments.purchase_paid, 0) AS purchase_paid
+
+            FROM {$companies_table} c
+
+            /* =====================================
+            * SALES
+            * ===================================== */
+            LEFT JOIN (
+
+                SELECT
+                    b.company_id,
+                    SUM(
+                        bi.quantity * bi.unit_price
+                        
+                    ) AS sale_amount
+
+                FROM {$bills_table} b
+
+                INNER JOIN {$items_table} bi
+                    ON bi.bill_id = b.ID
+
+                WHERE b.bill_type = 'sale'
+
+                GROUP BY b.company_id
+
+            ) sales
+                ON sales.company_id = c.ID
+
+
+            /* =====================================
+            * PURCHASES
+            * ===================================== */
+            LEFT JOIN (
+
+                SELECT
+                    b.company_id,
+                    SUM(
+                        bi.quantity * bi.unit_price
+                        
+                    ) AS purchase_amount
+
+                FROM {$bills_table} b
+
+                INNER JOIN {$items_table} bi
+                    ON bi.bill_id = b.ID
+
+                WHERE b.bill_type = 'purchase'
+
+                GROUP BY b.company_id
+
+            ) purchases
+                ON purchases.company_id = c.ID
+
+
+            /* =====================================
+            * SALE PAYMENTS
+            * Money received from customer
+            * ===================================== */
+            LEFT JOIN (
+
+                SELECT
+                    b.company_id,
+                    SUM(p.paid_amount) AS sale_paid
+
+                FROM {$payments_table} p
+
+                INNER JOIN {$bills_table} b
+                    ON b.ID = p.bill_id
+
+                WHERE b.bill_type = 'sale'
+
+                GROUP BY b.company_id
+
+            ) sale_payments
+                ON sale_payments.company_id = c.ID
+
+
+            /* =====================================
+            * PURCHASE PAYMENTS
+            * Money paid to supplier
+            * ===================================== */
+            LEFT JOIN (
+
+                SELECT
+                    b.company_id,
+                    SUM(p.paid_amount) AS purchase_paid
+
+                FROM {$payments_table} p
+
+                INNER JOIN {$bills_table} b
+                    ON b.ID = p.bill_id
+
+                WHERE b.bill_type = 'purchase'
+
+                GROUP BY b.company_id
+
+            ) purchase_payments
+                ON purchase_payments.company_id = c.ID
+
+
+            ORDER BY c.title ASC
+        ";
+
+        $results = $wpdb->get_results( $sql, ARRAY_A );
+
+        if ( ! $results ) {
+            return rest_ensure_response( [] );
+        }
+
+        foreach ( $results as &$company ) {
+
+            $sale          = (float) $company['sale'];
+            $purchase      = (float) $company['purchase'];
+            $sale_paid     = (float) $company['sale_paid'];
+            $purchase_paid = (float) $company['purchase_paid'];
+
+            /*
+            * Money ABC still owes us.
+            */
+            $receivable = $sale - $sale_paid;
+
+            /*
+            * Money we still owe ABC.
+            */
+            $payable = $purchase - $purchase_paid;
+
+            /*
+            * Positive = ABC owes us.
+            * Negative = we owe ABC.
+            */
+            $balance = $receivable - $payable;
+
+            $company['sale']           = number_format( $sale, 2, '.', '' );
+            $company['purchase']       = number_format( $purchase, 2, '.', '' );
+            $company['sale_paid']      = number_format( $sale_paid, 2, '.', '' );
+            $company['purchase_paid']  = number_format( $purchase_paid, 2, '.', '' );
+            $company['receivable']     = number_format( max( $receivable, 0 ), 2, '.', '' );
+            $company['payable']        = number_format( max( $payable, 0 ), 2, '.', '' );
+            $company['balance']        = number_format( abs( $balance ), 2, '.', '' );
+
+            if ( $balance > 0 ) {
+                $company['balance_type'] = 'receivable';
+            } elseif ( $balance < 0 ) {
+                $company['balance_type'] = 'payable';
+            } else {
+                $company['balance_type'] = 'settled';
+            }
+        }
+
+        // $results = $wpdb->get_results($sql, ARRAY_A);
+
+        // return rest_ensure_response($results);
+        return new WP_REST_Response(
+            array(
+                'success'      => true,
+                'data'         => $results,
+            ),
+            200
+        );
+    }
+
     /**
      * Get company by id
      *
@@ -414,7 +621,7 @@ class BillsController
                 array('status' => 404)
             );
         }
-        
+
 
         $user_id    = get_current_user_id();
         $ip         = Utils::get_client_ip();
@@ -441,7 +648,7 @@ class BillsController
                 'status'     => $status,
                 'updated_at' => current_time('mysql'),
             ],
-            [ 'ID' => $id ],
+            ['ID' => $id],
             ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s'],
 
             ['%d']
@@ -705,7 +912,7 @@ class BillsController
 
         $bill_items     = map_deep(wp_unslash($request->get_param('bill_items')), 'wp_kses_post');
 
-        $bill_no = $bill_no??'BILL-' . strtoupper(uniqid());
+        $bill_no = $bill_no ?? 'BILL-' . strtoupper(uniqid());
 
         $insert = $wpdb->insert(
             $companies_table,
@@ -759,7 +966,7 @@ class BillsController
                     'ip'            => $ip,
                     'user_agent'    => $user_agent,
                     'company_id'    => $company_id,
-                    'bill_no'       => $bill_no,                    
+                    'bill_no'       => $bill_no,
                     'bill_type'     => $bill_type,
                     'bill_date'     => $bill_date,
                     'discount'      => $discount,
@@ -768,7 +975,7 @@ class BillsController
                     'vat'           => $vat,
                     'shipping'      => $shipping,
                     'status'        => $status,
-                    'notes'         => $notes,                    
+                    'notes'         => $notes,
                 ],
             ),
             200
@@ -1190,13 +1397,13 @@ class BillsController
         $ip             = Utils::get_client_ip();
         $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
 
-        $bill_id     = $bill_id?sanitize_text_field(wp_unslash($bill_id)):'';
-        foreach($items as $item) {
-            $title     = isset($item['title'])?sanitize_text_field(wp_unslash($item['title'])):'';
-            $quantity     = isset($item['quantity'])?sanitize_text_field(wp_unslash($item['quantity'])):'';
-            $unit     = isset($item['unit'])?sanitize_text_field(wp_unslash($item['unit'])):'';
-            $unit_price     = isset($item['unit_price'])?sanitize_text_field(wp_unslash($item['unit_price'])):'';
-        
+        $bill_id     = $bill_id ? sanitize_text_field(wp_unslash($bill_id)) : '';
+        foreach ($items as $item) {
+            $title     = isset($item['title']) ? sanitize_text_field(wp_unslash($item['title'])) : '';
+            $quantity     = isset($item['quantity']) ? sanitize_text_field(wp_unslash($item['quantity'])) : '';
+            $unit     = isset($item['unit']) ? sanitize_text_field(wp_unslash($item['unit'])) : '';
+            $unit_price     = isset($item['unit_price']) ? sanitize_text_field(wp_unslash($item['unit_price'])) : '';
+
             $insert = $wpdb->insert(
                 $items_table,
                 [
@@ -1228,7 +1435,6 @@ class BillsController
                     )
                 );
             }
-
         }
         return true;
 
@@ -1240,7 +1446,7 @@ class BillsController
         //             'id'            => $wpdb->insert_id,
         //             'user_id'       => $user_id,
         //             'ip'            => $ip,
-                    
+
         //             'bill_id'    => $bill_id,
         //             'title'  => $title,
         //             'quantity'     => $quantity,
@@ -1307,7 +1513,7 @@ class BillsController
         $user_id        = get_current_user_id();
         $ip             = Utils::get_client_ip();
         $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
-        
+
 
         $bill_id     = sanitize_text_field(wp_unslash($request->get_param('bill_id')));
         $payment_date      = sanitize_text_field(wp_unslash($request->get_param('payment_date')));
@@ -1325,7 +1531,7 @@ class BillsController
                 'bill_id'       => $bill_id,
                 'payment_date'  => $payment_date,
                 'paid_amount'   => $paid_amount,
-                'reference_no'  => $reference_no,                
+                'reference_no'  => $reference_no,
                 'notes'         => $notes,
 
                 'created_at'    => current_time('mysql'),
@@ -1359,7 +1565,7 @@ class BillsController
                     'payment_date'  => $payment_date,
                     'paid_amount'   => $paid_amount,
                     'reference_no'  => $reference_no,
-                    'notes'         => $notes,                    
+                    'notes'         => $notes,
                 ],
             ),
             200

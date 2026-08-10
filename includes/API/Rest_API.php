@@ -431,7 +431,30 @@ class Rest_API
             ]
         );
 
-        // Get company bi ID
+        // Get companies with filters
+        register_rest_route(
+            self::NAMESPACE,
+            '/companies/with-transactions',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_companies_with_transactions'],
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+                'args' => [
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            ]
+        );
+
+        // Get company by ID
         register_rest_route(
             self::NAMESPACE,
             '/company/(?P<id>\d+)',

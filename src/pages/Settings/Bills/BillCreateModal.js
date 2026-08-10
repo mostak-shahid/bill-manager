@@ -231,7 +231,7 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                                         {
                                             [
                                                 { 'value': 'purchase', 'label': 'Purchase' },
-                                                { 'value': 'sell', 'label': 'Sell' },
+                                                { 'value': 'sale', 'label': 'Sale' },
                                             ].map(({ value, label }) => (
                                                 <option
                                                     value={value}
@@ -345,19 +345,19 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                                 </FloatingLabel>
                             </Col>
                             <Col md={6}>
-                            <FloatingLabel
-                                controlId="notes"
-                                label={__('Notes', 'bill-manager')}
-                                className="mb-3"
-                            >
-                                <Form.Control
-                                    as="textarea"
-                                    rows={5}
-                                    placeholder={__('Notes', 'bill-manager')}
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                />
-                            </FloatingLabel>
+                                <FloatingLabel
+                                    controlId="notes"
+                                    label={__('Notes', 'bill-manager')}
+                                    className="mb-3"
+                                >
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={5}
+                                        placeholder={__('Notes', 'bill-manager')}
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                    />
+                                </FloatingLabel>
                             </Col>
                         </Row>
 
