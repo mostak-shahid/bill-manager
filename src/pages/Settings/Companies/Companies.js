@@ -120,7 +120,7 @@ const Companies = () => {
             // console.log('Fetching companies with params:', queryString);
 
             const response = await apiFetch({
-                path: `/bill-manager/v1/companies?${queryString}`,
+                path: `/bill-manager/v1/companies/with-transactions?${queryString}`,
             });
             setData(response.data || []);
             setTotal(response.total || 0);
@@ -283,23 +283,24 @@ const Companies = () => {
     const columns = [
         // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
         { name: 'Title', id: 'title', selector: row => row.title, sortable: true, pinned: 'left' },
+        { name: 'Balance', id: 'balance_type', selector: row => row.balance_type, sortable: true, hide: 'sm' },
         { name: 'Phone', id: 'phone', selector: row => row.phone, sortable: true, hide: 'sm' },
         { name: 'Email', id: 'email', selector: row => row.email, sortable: true, hide: 'md', },
         { name: 'Address', id: 'address', selector: row => row.address, sortable: true, hide: 'lg', },
 
-        {
-            name: 'User',
-            id: 'user_id',
-            // selector: row => row.user_id, 
-            cell: (row) => <div><span class="fw-semibold">{row.user_login}</span>ID:({row.user_id})</div>,
-            sortable: true,
-            omit: true
-        },
-        { name: 'Email', id: 'user_email', selector: row => row.user_email, omit: true },
-        { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, omit: true },
-        // { name: 'Description', id: 'description', selector: row => row.description, sortable: true, omit: true },
-        { name: 'User Agent', id: 'user_agent', selector: row => row.user_agent, sortable: true, omit: true },
-        { name: 'Date', id: 'created_at', selector: row => row.created_at, sortable: true, hide: 'sm'},
+        // {
+        //     name: 'User',
+        //     id: 'user_id',
+        //     // selector: row => row.user_id, 
+        //     cell: (row) => <div><span class="fw-semibold">{row.user_login}</span>ID:({row.user_id})</div>,
+        //     sortable: true,
+        //     omit: true
+        // },
+        // { name: 'Email', id: 'user_email', selector: row => row.user_email, omit: true },
+        // { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, omit: true },
+        // // { name: 'Description', id: 'description', selector: row => row.description, sortable: true, omit: true },
+        // { name: 'User Agent', id: 'user_agent', selector: row => row.user_agent, sortable: true, omit: true },
+        { name: 'Added', id: 'created_at', selector: row => row.created_at, sortable: true, hide: 'sm'},
         {
             name: 'Action',
             cell: (row) => (

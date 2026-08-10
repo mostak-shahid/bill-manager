@@ -160,15 +160,12 @@ class BillsController
 
         $offset = ($page - 1) * $per_page;
 
-        /**
-         * Build unified where clause and joins
-         */
+        $join_users     = "LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID";
+
         $prepared_where = '1=1';
         $where_params   = array();
-        $join_users     = '';
 
         if ($search !== '') {
-            $join_users = "LEFT JOIN {$wpdb->users} u ON c.user_id = u.ID";
             $like = '%' . $wpdb->esc_like($search) . '%';
             $prepared_where .= " AND (u.display_name LIKE %s OR c.ip LIKE %s OR c.title LIKE %s)";
             $where_params[] = $like;
@@ -250,6 +247,8 @@ class BillsController
                 'page'         => $page,
                 'per_page'     => $per_page,
                 'total_pages'  => (int) ceil($total / $per_page),
+                'count_query' => $count_query,
+                'data_query' => $data_query,
             ),
             200
         );
