@@ -433,8 +433,7 @@ class BillsController
      * @param WP_REST_Request $request Request object.
      * @return WP_REST_Response|WP_Error
      */
-    public static function get_company(WP_REST_Request $request)
-    {
+    public static function get_company( WP_REST_Request $request ) {
         if (!current_user_can('manage_options')) {
             return new WP_Error(
                 'rest_update_error',
@@ -444,29 +443,230 @@ class BillsController
         }
 
         global $wpdb;
+
+        // $company_id = absint( $request['id'] );
+        $company_id = absint($request->get_param('id'));
+
         $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
 
-        $id = absint($request->get_param('id'));
+        /*
+        * First make sure company exists.
+        */
+        $company = $wpdb->get_row(
+            $wpdb->prepare(
+                "
+                SELECT
+                    ID,
+                    title,
+                    address,
+                    phone,
+                    email,
+                    created_at
+                FROM {$companies_table}
+                WHERE ID = %d
+                ",
+                $company_id
+            ),
+            ARRAY_A
+        );
 
-        if (empty($id)) {
+        if ( ! $company ) {
             return new WP_Error(
-                'rest_invalid_param',
-                'A valid company ID is required.',
-                array('status' => 400)
+                'company_not_found',
+                __( 'Company not found.', 'bill-manager' ),
+                [
+                    'status' => 404,
+                ]
             );
         }
 
+        /*
+        * Calculate company financial summary.
+        *
+        * Bill total:
+        *
+        * Item subtotal
+        * - item discount
+        * + item tax
+        * + bill shipping
+        * - bill discount
+        * + bill tax
+        */
 
-        $data_query = $wpdb->prepare(
-            "SELECT l.*, u.display_name AS user_name, u.user_login, u.user_email
-            FROM {$companies_table} l
-            LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
-            WHERE l.ID = %d
-            LIMIT 1",
-            $id
+        $financials = $wpdb->get_row(
+            $wpdb->prepare(
+                "
+                SELECT
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN b.bill_type = 'sale'
+                                THEN bt.bill_total
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS sale,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN b.bill_type = 'purchase'
+                                THEN bt.bill_total
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS purchase
+
+                FROM {$bills_table} b
+
+                LEFT JOIN (
+
+                    SELECT
+                        b2.ID AS bill_id,
+
+                        (
+                            COALESCE(
+                                SUM(
+                                    (
+                                        bi.quantity * bi.unit_price
+                                    )
+                                    
+                                ),
+                                0
+                            )
+
+                            - COALESCE(b2.discount, 0)
+                            + COALESCE(b2.tax, 0)
+                            + COALESCE(b2.shipping, 0)
+
+                        ) AS bill_total
+
+                    FROM {$bills_table} b2
+
+                    LEFT JOIN {$items_table} bi
+                        ON bi.bill_id = b2.ID
+
+                    WHERE b2.company_id = %d
+
+                    GROUP BY b2.ID
+
+                ) bt
+                    ON bt.bill_id = b.ID
+
+                WHERE b.company_id = %d
+                ",
+                $company_id,
+                $company_id
+            ),
+            ARRAY_A
         );
 
-        $result = $wpdb->get_row($data_query, ARRAY_A);
+        /*
+        * Calculate payments separately.
+        *
+        * sale_paid     = money received from company
+        * purchase_paid = money paid to company
+        */
+
+        $payments = $wpdb->get_row(
+            $wpdb->prepare(
+                "
+                SELECT
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN b.bill_type = 'sale'
+                                THEN p.paid_amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS sale_paid,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN b.bill_type = 'purchase'
+                                THEN p.paid_amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS purchase_paid
+
+                FROM {$payments_table} p
+
+                INNER JOIN {$bills_table} b
+                    ON b.ID = p.bill_id
+
+                WHERE b.company_id = %d
+                ",
+                $company_id
+            ),
+            ARRAY_A
+        );
+
+        $sale           = (float) $financials['sale'];
+        $purchase       = (float) $financials['purchase'];
+        $sale_paid      = (float) $payments['sale_paid'];
+        $purchase_paid  = (float) $payments['purchase_paid'];
+
+        /*
+        * ABC owes us.
+        */
+        $receivable = $sale - $sale_paid;
+
+        /*
+        * We owe ABC.
+        */
+        $payable = $purchase - $purchase_paid;
+
+        /*
+        * Positive:
+        * Company owes us.
+        *
+        * Negative:
+        * We owe company.
+        */
+        $balance = $receivable - $payable;
+
+        if ( $balance > 0 ) {
+            $balance_type = 'receivable';
+        } elseif ( $balance < 0 ) {
+            $balance_type = 'payable';
+        } else {
+            $balance_type = 'settled';
+        }
+
+        $result = [
+            'id'             => (int) $company['ID'],
+            'title'          => $company['title'],
+            'address'        => $company['address'],
+            'phone'          => $company['phone'],
+            'email'          => $company['email'],
+            'created_at'     => $company['created_at'],
+
+            'sale'           => number_format( $sale, 2, '.', '' ),
+            'purchase'       => number_format( $purchase, 2, '.', '' ),
+
+            'sale_paid'      => number_format( $sale_paid, 2, '.', '' ),
+            'purchase_paid' => number_format( $purchase_paid, 2, '.', '' ),
+
+            'receivable'     => number_format( max( 0, $receivable ), 2, '.', '' ),
+            'payable'        => number_format( max( 0, $payable ), 2, '.', '' ),
+
+            'balance'        => number_format( abs( $balance ), 2, '.', '' ),
+            'balance_type'   => $balance_type,
+        ];
+        // return rest_ensure_response( $result );
+
 
         if (empty($result)) {
             return new WP_Error(
@@ -484,6 +684,57 @@ class BillsController
             200
         );
     }
+    // public static function get_company(WP_REST_Request $request)
+    // {
+    //     if (!current_user_can('manage_options')) {
+    //         return new WP_Error(
+    //             'rest_update_error',
+    //             'Sorry, you are not allowed to update the DAEXT UI Test options.',
+    //             array('status' => 403)
+    //         );
+    //     }
+
+    //     global $wpdb;
+    //     $companies_table = $wpdb->prefix . 'bill_manager_companies';
+
+    //     $id = absint($request->get_param('id'));
+
+    //     if (empty($id)) {
+    //         return new WP_Error(
+    //             'rest_invalid_param',
+    //             'A valid company ID is required.',
+    //             array('status' => 400)
+    //         );
+    //     }
+
+
+    //     $data_query = $wpdb->prepare(
+    //         "SELECT l.*, u.display_name AS user_name, u.user_login, u.user_email
+    //         FROM {$companies_table} l
+    //         LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
+    //         WHERE l.ID = %d
+    //         LIMIT 1",
+    //         $id
+    //     );
+
+    //     $result = $wpdb->get_row($data_query, ARRAY_A);
+
+    //     if (empty($result)) {
+    //         return new WP_Error(
+    //             'rest_not_found',
+    //             'Company not found.',
+    //             array('status' => 404)
+    //         );
+    //     }
+
+    //     return new WP_REST_Response(
+    //         array(
+    //             'success' => true,
+    //             'data'    => $result,
+    //         ),
+    //         200
+    //     );
+    // }
 
     /**
      * Update company by id
@@ -749,6 +1000,519 @@ class BillsController
                 'data'    => $results,
             ),
             200
+        );
+    }
+
+    public static function get_company_bills( WP_REST_Request $request ) {
+
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+
+        $company_id = absint($request->get_param('id'));
+
+        $page     = max( 1, absint( $request->get_param( 'page' ) ) );
+        $per_page = min(
+            100,
+            max( 1, absint( $request->get_param( 'per_page' ) ) ) 
+        );
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        $search    = trim( (string) $request->get_param( 'search' ) );
+        $orderby   = sanitize_key( $request->get_param( 'orderby' ) ?: 'date' );
+        $order     = strtolower( $request->get_param( 'order' ) ?: 'desc' );
+
+        $date_from = trim( (string) $request->get_param( 'date_from' ) );
+        $date_to   = trim( (string) $request->get_param( 'date_to' ) );
+
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
+
+        /*
+        * Whitelist sortable columns.
+        *
+        * NEVER put a raw request parameter directly into ORDER BY.
+        */
+        $orderby_map = [
+            'id'       => 'b.ID',
+            'bill_no'  => 'b.bill_no',
+            'type'     => 'b.bill_type',
+            'amount'   => 'bill_total',
+            'paid'     => 'paid_amount',
+            'balance'  => 'balance',
+            'status'   => 'status_order',
+            'date'     => 'b.bill_date',
+        ];
+
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'b.bill_date';
+        $order_sql   = $order === 'asc' ? 'ASC' : 'DESC';
+
+        $where  = [];
+        $params = [];
+
+        $where[]  = 'b.company_id = %d';
+        $params[] = $company_id;
+
+        /*
+        * Search.
+        */
+        if ( $search !== '' ) {
+
+            $where[] = '(
+                b.bill_no LIKE %s
+                OR b.reference_no LIKE %s
+                OR c.title LIKE %s
+            )';
+
+            $search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+        /*
+        * Date filters.
+        */
+        if ( $date_from !== '' ) {
+
+            $where[]  = 'b.bill_date >= %s';
+            $params[] = $date_from . ' 00:00:00';
+        }
+
+        if ( $date_to !== '' ) {
+
+            $where[]  = 'b.bill_date <= %s';
+            $params[] = $date_to . ' 23:59:59';
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        /*
+        * Main query.
+        */
+        $sql = "
+            SELECT
+
+                b.ID AS id,
+                b.bill_no,
+
+                c.title AS company,
+
+                CASE
+                    WHEN b.bill_type = 'sale'
+                    THEN 'Sale'
+                    ELSE 'Purchase'
+                END AS type,
+
+                ROUND(
+                    COALESCE(bt.bill_total, 0),
+                    2
+                ) AS bill_total,
+
+                ROUND(
+                    COALESCE(pt.paid_amount, 0),
+                    2
+                ) AS paid_amount,
+
+                ROUND(
+                    COALESCE(bt.bill_total, 0)
+                    - COALESCE(pt.paid_amount, 0),
+                    2
+                ) AS balance,
+
+                CASE
+
+                    WHEN COALESCE(pt.paid_amount, 0) = 0
+                        THEN 'Due'
+
+                    WHEN COALESCE(pt.paid_amount, 0) < COALESCE(bt.bill_total, 0)
+                        THEN 'Partially Paid'
+
+                    WHEN COALESCE(pt.paid_amount, 0) = COALESCE(bt.bill_total, 0)
+                        THEN 'Paid'
+
+                    WHEN COALESCE(pt.paid_amount, 0) > COALESCE(bt.bill_total, 0)
+                        THEN 'Over Paid'
+
+                END AS status,
+
+                CASE
+
+                    WHEN COALESCE(pt.paid_amount, 0) = 0
+                        THEN 1
+
+                    WHEN COALESCE(pt.paid_amount, 0) < COALESCE(bt.bill_total, 0)
+                        THEN 2
+
+                    WHEN COALESCE(pt.paid_amount, 0) = COALESCE(bt.bill_total, 0)
+                        THEN 3
+
+                    ELSE 4
+
+                END AS status_order,
+
+                b.bill_date AS date
+
+            FROM {$bills_table} b
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            /*
+            * Bill total.
+            */
+            LEFT JOIN (
+
+                SELECT
+
+                    b2.ID AS bill_id,
+
+                    (
+                        COALESCE(
+                            SUM(
+                                (
+                                    bi.quantity * bi.unit_price
+                                )
+                                
+                            ),
+                            0
+                        )
+
+                        - COALESCE(b2.discount, 0)
+                        + COALESCE(b2.tax, 0)
+                        + COALESCE(b2.shipping, 0)
+
+                    ) AS bill_total
+
+                FROM {$bills_table} b2
+
+                LEFT JOIN {$items_table} bi
+                    ON bi.bill_id = b2.ID
+
+                GROUP BY b2.ID
+
+            ) bt
+                ON bt.bill_id = b.ID
+
+            /*
+            * Total payments for each bill.
+            */
+            LEFT JOIN (
+
+                SELECT
+
+                    bill_id,
+                    SUM(paid_amount) AS paid_amount
+
+                FROM {$payments_table}
+
+                GROUP BY bill_id
+
+            ) pt
+                ON pt.bill_id = b.ID
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $prepared_sql = $wpdb->prepare( $sql, $params );
+
+        $results = $wpdb->get_results(
+            $prepared_sql,
+            ARRAY_A
+        );
+
+        /*
+        * Total records.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$bills_table} b
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+        ";
+
+        /*
+        * Remove LIMIT/OFFSET parameters.
+        */
+        $count_params = array_slice(
+            $params,
+            0,
+            count( $params ) - 2
+        );
+
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                $count_sql,
+                $count_params
+            )
+        );
+
+        foreach ( $results as &$row ) {
+
+            $row['id'] = (int) $row['id'];
+
+            $row['amount'] = number_format(
+                (float) $row['bill_total'],
+                2,
+                '.',
+                ''
+            );
+
+            $row['paid'] = number_format(
+                (float) $row['paid_amount'],
+                2,
+                '.',
+                ''
+            );
+
+            $row['balance'] = number_format(
+                abs( (float) $row['balance'] ),
+                2,
+                '.',
+                ''
+            );
+
+            unset( $row['bill_total'] );
+            unset( $row['paid_amount'] );
+            unset( $row['status_order'] );
+        }
+
+        return rest_ensure_response(
+            [
+                'success'    => true,
+                'data' => $results,
+                'page'        => $page,
+                'per_page'    => $per_page,
+                'total'       => $total,
+                'total_pages' => $per_page > 0
+                    ? (int) ceil( $total / $per_page )
+                    : 1,
+            ]
+        );
+    }
+    public static function get_company_payments( WP_REST_Request $request ) {
+
+        // if (!current_user_can('manage_options')) {
+        //     return new WP_Error(
+        //         'rest_update_error',
+        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
+        //         array('status' => 403)
+        //     );
+        // }
+
+        global $wpdb;
+
+        $company_id = absint($request->get_param('id'));
+
+        $page     = max( 1, absint( $request->get_param( 'page' ) ) );
+        $per_page = min(
+            100,
+            max( 1, absint( $request->get_param( 'per_page' ) ) )
+        );
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        $search    = trim( (string) $request->get_param( 'search' ) );
+        $orderby   = sanitize_key( $request->get_param( 'orderby' ) ?: 'date' );
+        $order     = strtolower( $request->get_param( 'order' ) ?: 'desc' );
+
+        $date_from = trim( (string) $request->get_param( 'date_from' ) );
+        $date_to   = trim( (string) $request->get_param( 'date_to' ) );
+
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
+
+        /*
+        * Whitelist sortable columns.
+        */
+        $orderby_map = [
+            'id'       => 'p.ID',
+            'bill_no'  => 'b.bill_no',
+            'type'     => 'b.bill_type',
+            'amount'   => 'p.paid_amount',
+            // 'method'   => 'p.payment_method',
+            'paid_by'  => 'p.paid_by',
+            'date'     => 'p.payment_date',
+        ];
+
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'p.payment_date';
+        $order_sql   = $order === 'asc' ? 'ASC' : 'DESC';
+
+        $where  = [];
+        $params = [];
+
+        $where[]  = 'b.company_id = %d';
+        $params[] = $company_id;
+
+        /*
+        * Search.
+        */
+        if ( $search !== '' ) {
+
+            $where[] = '(
+                b.bill_no LIKE %s
+                OR p.paid_by LIKE %s
+                OR p.reference_no LIKE %s
+                OR p.notes LIKE %s
+            )';
+
+            $search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+        /*
+        * Date filters.
+        */
+        if ( $date_from !== '' ) {
+
+            $where[]  = 'p.payment_date >= %s';
+            $params[] = $date_from . ' 00:00:00';
+        }
+
+        if ( $date_to !== '' ) {
+
+            $where[]  = 'p.payment_date <= %s';
+            $params[] = $date_to . ' 23:59:59';
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        $sql = "
+            SELECT
+
+                p.ID AS id,
+
+                CONCAT(
+                    'PAY-',
+                    LPAD(p.ID, 5, '0')
+                ) AS payment_id,
+
+                b.bill_no,
+
+                c.title AS company,
+
+                CASE
+                    WHEN b.bill_type = 'sale'
+                    THEN 'Sale'
+                    ELSE 'Purchase'
+                END AS type,
+
+                ROUND(
+                    p.paid_amount,
+                    2
+                ) AS amount,
+
+                p.paid_by,
+
+                p.payment_date AS date
+
+            FROM {$payments_table} p
+
+            INNER JOIN {$bills_table} b
+                ON b.ID = p.bill_id
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                $sql,
+                $params
+            ),
+            ARRAY_A
+        );
+
+        /*
+        * Total records.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$payments_table} p
+
+            INNER JOIN {$bills_table} b
+                ON b.ID = p.bill_id
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+        ";
+
+        $count_params = array_slice(
+            $params,
+            0,
+            count( $params ) - 2
+        );
+
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                $count_sql,
+                $count_params
+            )
+        );
+
+        foreach ( $results as &$row ) {
+
+            $row['id'] = (int) $row['id'];
+
+            $row['amount'] = number_format(
+                (float) $row['amount'],
+                2,
+                '.',
+                ''
+            );
+        }
+
+        return rest_ensure_response(
+            [
+                'data' => $results,
+
+                'pagination' => [
+                    'page'        => $page,
+                    'per_page'    => $per_page,
+                    'total'       => $total,
+                    'total_pages' => $per_page > 0
+                        ? (int) ceil( $total / $per_page )
+                        : 0,
+                ],
+            ]
         );
     }
 

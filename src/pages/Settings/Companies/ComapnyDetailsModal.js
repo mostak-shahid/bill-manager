@@ -2,6 +2,7 @@ import { __ } from "@wordpress/i18n";
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { Row, Col, Button, Modal, Spinner, Card } from 'react-bootstrap';
+import Table from 'react-bootstrap/Table'; // This will be replaced with the DataTable component in the future
 
 export default function ComapnyDetailsModal({ show, setShow, id }) {
     // const [show, setShow] = useState(false);
@@ -62,7 +63,7 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                                         // text={variant.toLowerCase() === 'light' ? 'dark' : 'white'}
                                         text='dark'
                                         style={customCardStyle}
-                                        // className="mb-2"
+                                    // className="mb-2"
                                     >
                                         <Card.Header>{__('Company Information', 'bill-manager')}</Card.Header>
                                         <Card.Body>
@@ -187,18 +188,93 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                             </Row>
 
                             <h6 className="h6">{__('Recent Bills', 'bill-manager')}</h6>
+                            <Table striped bordered hover>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{__('Bill', 'bill-manager')}</th>
+                                        <th>{__('Type', 'bill-manager')}</th>
+                                        <th>{__('Amount', 'bill-manager')}</th>
+                                        <th>{__('Paid', 'bill-manager')}</th>
+                                        <th>{__('Balance', 'bill-manager')}</th>
+                                        <th>{__('Status', 'bill-manager')}</th>
+                                        <th>{__('Date', 'bill-manager')}</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>{__('Bill', 'bill-manager')}</td>
+                                        <td>{__('Type', 'bill-manager')}</td>
+                                        <td>{__('Amount', 'bill-manager')}</td>
+                                        <td>{__('Paid', 'bill-manager')}</td>
+                                        <td>{__('Balance', 'bill-manager')}</td>
+                                        <td>{__('Status', 'bill-manager')}</td>
+                                        <th>{__('Date', 'bill-manager')}</th>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>{__('Bill 2', 'bill-manager')}</td>
+                                        <td>{__('Type 2', 'bill-manager')}</td>
+                                        <td>{__('Amount 2', 'bill-manager')}</td>
+                                        <td>{__('Paid 2', 'bill-manager')}</td>
+                                        <td>{__('Balance 2', 'bill-manager')}</td>
+                                        <td>{__('Status 2', 'bill-manager')}</td>
+                                        <th>{__('Date 2', 'bill-manager')}</th>
+                                    </tr>
+                                </tbody>
+                            </Table>
+
                             <h6 className="h6">{__('Recent Payments', 'bill-manager')}</h6>
 
-                            <hr />
-                            <h6 className="h6">{__('User Details', 'bill-manager')}</h6>
+                            <Table striped bordered hover>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{__('Bill', 'bill-manager')}</th>
+                                        <th>{__('Type', 'bill-manager')}</th>
+                                        <th>{__('Amount', 'bill-manager')}</th>
+                                        <th>{__('Paid By', 'bill-manager')}</th>
+                                        <th>{__('Date', 'bill-manager')}</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>{__('Bill', 'bill-manager')}</td>
+                                        <td>{__('Type', 'bill-manager')}</td>
+                                        <td>{__('Amount', 'bill-manager')}</td>
+                                        <td>{__('Paid By', 'bill-manager')}</td>
+                                        <th>{__('Date', 'bill-manager')}</th>
+                                    </tr>
+                                </tbody>
+                            </Table>
+                            {
+                                dataDetailsModal?.notes && (
+                                    <>
+                                        <h6 className="h6">{__('Notes', 'bill-manager')}</h6>
+                                        <Card className="mb-3" style={customCardStyle}>
+                                            <Card.Body>
+                                                <Card.Text>
+                                                    {dataDetailsModal?.notes}
+                                                </Card.Text>
+                                            </Card.Body>
+                                        </Card>
+                                    </>
+                                )
+                            }
+
+
+                            <h6 className="h6">{__('Added By', 'bill-manager')}</h6>
                             <ul className="list-unstyled">
                                 <li>{__('User Name', 'bill-manager')}: {dataDetailsModal?.user_name}</li>
                                 <li>{__('User ID', 'bill-manager')}: {dataDetailsModal?.user_id}</li>
                                 <li>{__('User Email', 'bill-manager')}: {dataDetailsModal?.user_email}</li>
                                 <li>{__('User IP', 'bill-manager')}: {dataDetailsModal?.ip}</li>
                                 <li>{__('User Details', 'bill-manager')}: {dataDetailsModal?.user_agent}</li>
-                                <li>{__('Category', 'bill-manager')}: {dataDetailsModal?.category}</li>
-                                <li>{__('Date', 'bill-manager')}: {dataDetailsModal?.created_at}</li>
+                                <li>{__('Added', 'bill-manager')}: {dataDetailsModal?.created_at}</li>
                             </ul>
                         </>
                     )}

@@ -207,6 +207,7 @@ class Activator
 			bill_id bigint(20) unsigned NOT NULL,
 			payment_date datetime NOT NULL,
 			paid_amount decimal(12,2) NOT NULL,
+			paid_by varchar(255) NULL,
 
 			reference_no varchar(100) NULL,
 

@@ -570,6 +570,68 @@ class Rest_API
             )
         );
 
+        // Get company bills by company ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/company/(?P<id>\d+)/bills',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_company_bills'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args' => [
+                    'id' => [
+                        'required'          => true,
+                        'validate_callback' => function ($param, $request, $key) {
+                            return is_numeric($param) && (int) $param > 0;
+                        },
+                        'sanitize_callback' => 'absint',
+                    ],
+
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            ]
+        );
+
+        // Get company payments by company ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/company/(?P<id>\d+)/payments',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_company_payments'],
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+                'args' => [
+                    'id' => [
+                        'required'          => true,
+                        'validate_callback' => function ($param, $request, $key) {
+                            return is_numeric($param) && (int) $param > 0;
+                        },
+                        'sanitize_callback' => 'absint',
+                    ],
+
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            ]
+        );
+
         
 
         // All bills
