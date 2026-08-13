@@ -3,7 +3,7 @@ import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { Row, Col, Button, Modal, Spinner, Card } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table'; // This will be replaced with the DataTable component in the future
-
+import CompanyBills from './CompanyBills'; // Import the CompanyBills component
 export default function ComapnyDetailsModal({ show, setShow, id }) {
     // const [show, setShow] = useState(false);
     const [dataDetailsModal, setDataDetailsModal] = useState([]);
@@ -188,6 +188,7 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                             </Row>
 
                             <h6 className="h6">{__('Recent Bills', 'bill-manager')}</h6>
+                            <CompanyBills id={1} />
                             <Table striped bordered hover>
                                 <thead>
                                     <tr>

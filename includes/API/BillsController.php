@@ -1043,7 +1043,7 @@ class BillsController
         * NEVER put a raw request parameter directly into ORDER BY.
         */
         $orderby_map = [
-            'id'       => 'b.ID',
+            'ID'       => 'b.ID',
             'bill_no'  => 'b.bill_no',
             'type'     => 'b.bill_type',
             'amount'   => 'bill_total',
@@ -1103,7 +1103,7 @@ class BillsController
         $sql = "
             SELECT
 
-                b.ID AS id,
+                b.ID,
                 b.bill_no,
 
                 c.title AS company,
