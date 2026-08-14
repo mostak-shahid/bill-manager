@@ -735,9 +735,9 @@ class Rest_API
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => array(BillsController::class, 'get_bills'),
 
-                'permission_callback' => function () {
-                    return current_user_can('manage_options');
-                },
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
                 'args' => [
                     'page' => ['sanitize_callback' => 'absint', 'default' => 1],
                     'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
@@ -749,6 +749,28 @@ class Rest_API
                     'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
                 ],
             )
+        );
+
+        // Get bill by ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/bill/(?P<id>\d+)',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_bill'],
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+                'args'                => [
+                    'id' => [
+                        'required'          => true,
+                        'sanitize_callback' => 'absint',
+                        'validate_callback' => function ( $value ) {
+                            return absint( $value ) > 0;
+                        },
+                    ],
+                ],
+            ]
         );
 
         
@@ -792,6 +814,11 @@ class Rest_API
                         'type'              => 'string',
                         'sanitize_callback' => 'sanitize_text_field',
                     ),
+                    'paid_by' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
                     'reference_no'   => array(
                         'required'          => false,
                         'type'              => 'string',
@@ -803,6 +830,17 @@ class Rest_API
                         'sanitize_callback' => 'sanitize_textarea_field',
                     ),
                 ),
+            ]
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/payments',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_payments'],
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
             ]
         );
     }

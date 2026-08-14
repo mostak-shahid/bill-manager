@@ -11,7 +11,7 @@ import { useWindowWidth } from '../../../lib/Helpers';
 import '../Logs/ResponsiveTable.css';
 import { ToastControl } from "../../../components";
 
-export default function CompanyBills({ id = 0 }) {
+export default function CompanyPayments({ id = 0 }) {
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -59,7 +59,7 @@ export default function CompanyBills({ id = 0 }) {
             // console.log('Fetching companies with params:', queryString);
 
             const response = await apiFetch({
-                path: `/bill-manager/v1/company/${id}/bills?${queryString}`,
+                path: `/bill-manager/v1/company/${id}/payments?${queryString}`,
             });
             setData(response.data || []);
             setTotal(response.total || 0);
@@ -89,24 +89,23 @@ export default function CompanyBills({ id = 0 }) {
         { name: '#', id: 'id', selector: row => row.ID, sortable: true },
         // { name: 'Company', id: 'c.title', selector: row => row.company, sortable: false, pinned: 'left' },
         { name: 'Bill No', id: 'bill_no', selector: row => row.bill_no, sortable: true, hide: 'sm' },
-        { name: 'Amount', id: 'b.amount', selector: row => row.amount, sortable: true, hide: 'sm' },
         { name: 'Type', id: 'type', selector: row => row.type, sortable: true, hide: 'sm' },
-        { name: 'Paid', id: 'paid_amount', selector: row => row.paid, sortable: true, hide: 'md', },
-        { name: 'Status', id: 'status', selector: row => row.status, sortable: true, hide: 'md', },
+        { name: 'Paid', id: 'amount', selector: row => row.amount, sortable: true, hide: 'md', },
+        { name: 'Paid By', id: 'paid_by', selector: row => row.paid_by, sortable: true, hide: 'md', },
         { name: 'Date', id: 'date', selector: row => row.date, sortable: true, hide: 'md', },
     ];
     /*
     {
-    "ID": "1",
+{
+    "id": 1,
+    "payment_id": "PAY-00001",
     "bill_no": "bill-xyz123abc",
     "company": "ABC Company",
     "type": "Purchase",
-    "balance": "50040.00",
-    "status": "Over Paid",
-    "date": "2026-08-10 00:00:00",
-    "id": 0,
-    "amount": "-40.00",
-    "paid": "50000.00"
+    "amount": "50000.00",
+    "paid_by": "",
+    "date": "2026-08-10 00:00:00"
+}
 }
     */
     return (
@@ -114,6 +113,7 @@ export default function CompanyBills({ id = 0 }) {
             {console.log('Rendering CompanyPayments with data:', data)}
             {!loading &&  (
                 <>
+                <span className="text-muted">{__('No bills found for this company.', 'bill-manager')}</span>
                 <DataTable
                     // keyField="ID"
                     columns={columns}

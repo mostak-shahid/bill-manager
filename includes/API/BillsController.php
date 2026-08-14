@@ -1406,7 +1406,7 @@ class BillsController
         $sql = "
             SELECT
 
-                p.ID AS id,
+                p.ID,
 
                 CONCAT(
                     'PAY-',
@@ -1662,183 +1662,610 @@ class BillsController
      * @param WP_REST_Request $request Request object.
      * @return WP_REST_Response|WP_Error
      */
-    public static function get_bills(WP_REST_Request $request)
-    {
-        if (!current_user_can('manage_options')) {
-            return new WP_Error(
-                'rest_update_error',
-                'Sorry, you are not allowed to update the DAEXT UI Test options.',
-                array('status' => 403)
-            );
-        }
+    // public static function get_bills(WP_REST_Request $request)
+    // {
+    //     if (!current_user_can('manage_options')) {
+    //         return new WP_Error(
+    //             'rest_update_error',
+    //             'Sorry, you are not allowed to update the DAEXT UI Test options.',
+    //             array('status' => 403)
+    //         );
+    //     }
+    //     global $wpdb;
+    //     $bills_table = $wpdb->prefix . 'bill_manager_bills';
+
+    //     $page     = max(1, (int) $request->get_param('page'));
+    //     $per_page = max(1, (int) $request->get_param('per_page'));
+    //     $search   = trim((string) $request->get_param('search'));
+    //     $filter    = $request->get_param('filter');
+
+    //     $date_from = $request->get_param('date_from');
+    //     $date_to   = $request->get_param('date_to');
+
+    //     $orderby = $request->get_param('sort_field');
+    //     $order   = strtoupper($request->get_param('sort_order')) == 'ASC' ? 'ASC' : 'DESC';
+
+    //     // Allowed order by columns
+    //     $allowed_orderby = array('ID', 'user_id', 'ip', 'title', 'created_at', 'updated_at');
+    //     if (! in_array($orderby, $allowed_orderby, true)) {
+    //         $orderby = 'ID';
+    //     }
+
+    //     $offset = ($page - 1) * $per_page;
+
+    //     $join            = '';
+    //     $where_clauses   = array('1=1');
+    //     $search_clauses  = array();
+
+    //     /**
+    //      * Search billic
+    //      */
+    //     if ($search !== '') {
+    //         $join = "LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID";
+
+    //         $like = '%' . $wpdb->esc_like($search) . '%';
+
+    //         $search_clauses[] = $wpdb->prepare('u.display_name LIKE %s', $like);
+    //         $search_clauses[] = $wpdb->prepare('l.ip LIKE %s', $like);
+    //         $search_clauses[] = $wpdb->prepare('l.title LIKE %s', $like);
+
+    //         // Date search only if valid YYYY-MM-DD
+    //         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
+    //             $search_clauses[] = $wpdb->prepare('DATE(l.created_at) = %s', $search);
+    //         }
+    //     }
+
+    //     if (! empty($search_clauses)) {
+    //         $where_clauses[] = '(' . implode(' OR ', $search_clauses) . ')';
+    //     }
+
+    //     /**
+    //      * Time-based filter (today, week, month)
+    //      */
+    //     if (! empty($filter) && $filter !== 'any') {
+    //         $current_date = gmdate('Y-m-d');
+    //         switch ($filter) {
+    //             case 'today':
+    //                 $where_clauses[] = $wpdb->prepare('DATE(l.created_at) = %s', $current_date);
+    //                 break;
+    //             case 'week':
+    //                 $week_start = gmdate('Y-m-d', strtotime('this week monday'));
+    //                 $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', $week_start);
+    //                 break;
+    //             case 'month':
+    //                 $month_start = gmdate('Y-m-01');
+    //                 $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', $month_start);
+    //                 break;
+    //         }
+    //     }
+
+    //     /**
+    //      * Date range filter
+    //      */
+    //     if (! empty($date_from)) {
+    //         $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', sanitize_text_field($date_from));
+    //     }
+
+    //     if (! empty($date_to)) {
+    //         $where_clauses[] = $wpdb->prepare('DATE(l.created_at) <= %s', sanitize_text_field($date_to));
+    //     }
+
+    //     /**
+    //      * Build prepared where clause with placeholders
+    //      */
+    //     $prepared_where = '1=1';
+    //     $where_params = array();
+
+    //     if ($search !== '') {
+    //         $join = "LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID";
+    //         $like = '%' . $wpdb->esc_like($search) . '%';
+    //         $prepared_where .= " AND (u.display_name LIKE %s OR l.ip LIKE %s OR l.title LIKE %s";
+    //         $where_params[] = $like;
+    //         $where_params[] = $like;
+    //         $where_params[] = $like;
+
+    //         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
+    //             $prepared_where .= " OR DATE(l.created_at) = %s";
+    //             $where_params[] = $search;
+    //         }
+    //         $prepared_where .= ')';
+    //     }
+
+    //     if (! empty($filter) && $filter !== 'any') {
+    //         $current_date = gmdate('Y-m-d');
+    //         if ($filter === 'today') {
+    //             $prepared_where .= " AND DATE(l.created_at) = %s";
+    //             $where_params[] = $current_date;
+    //         } elseif ($filter === 'week') {
+    //             $week_start = gmdate('Y-m-d', strtotime('this week monday'));
+    //             $prepared_where .= " AND DATE(l.created_at) >= %s";
+    //             $where_params[] = $week_start;
+    //         } elseif ($filter === 'month') {
+    //             $month_start = gmdate('Y-m-01');
+    //             $prepared_where .= " AND DATE(l.created_at) >= %s";
+    //             $where_params[] = $month_start;
+    //         }
+    //     }
+
+    //     if (! empty($date_from)) {
+    //         $prepared_where .= " AND DATE(l.created_at) >= %s";
+    //         $where_params[] = sanitize_text_field($date_from);
+    //     }
+
+    //     if (! empty($date_to)) {
+    //         $prepared_where .= " AND DATE(l.created_at) <= %s";
+    //         $where_params[] = sanitize_text_field($date_to);
+    //     }
+
+    //     /**
+    //      * Total count query
+    //      */
+    //     $count_query = $wpdb->prepare(
+    //         "SELECT COUNT(*)
+    //         FROM {$bills_table} l
+    //         {$join}
+    //         WHERE {$prepared_where}",
+    //         ...$where_params
+    //     );
+
+    //     $total = (int) $wpdb->get_var($count_query);
+
+    //     /**
+    //      * Data query - add per_page and offset to params
+    //      */
+    //     $data_query_params = $where_params;
+    //     $data_query_params[] = $per_page;
+    //     $data_query_params[] = $offset;
+
+    //     $data_query = $wpdb->prepare(
+    //         "SELECT l.*, u.display_name AS user_name, u.user_login, u.user_email
+    //         FROM {$bills_table} l
+    //         LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
+    //         WHERE {$prepared_where}
+    //         ORDER BY l.{$orderby} {$order}
+    //         LIMIT %d OFFSET %d",
+    //         ...$data_query_params
+    //     );
+
+    //     $results = $wpdb->get_results($data_query, ARRAY_A);
+
+    //     return new WP_REST_Response(
+    //         array(
+    //             'success'      => true,
+    //             'data'         => $results,
+    //             'total'        => $total,
+    //             'page'         => $page,
+    //             'per_page'     => $per_page,
+    //             'total_pages'  => (int) ceil($total / $per_page),
+    //         ),
+    //         200
+    //     );
+    // }
+    public static function  get_bills( WP_REST_Request $request ) {
+
         global $wpdb;
-        $bills_table = $wpdb->prefix . 'bill_manager_bills';
 
-        $page     = max(1, (int) $request->get_param('page'));
-        $per_page = max(1, (int) $request->get_param('per_page'));
-        $search   = trim((string) $request->get_param('search'));
-        $filter    = $request->get_param('filter');
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
 
-        $date_from = $request->get_param('date_from');
-        $date_to   = $request->get_param('date_to');
-
-        $orderby = $request->get_param('sort_field');
-        $order   = strtoupper($request->get_param('sort_order')) == 'ASC' ? 'ASC' : 'DESC';
-
-        // Allowed order by columns
-        $allowed_orderby = array('ID', 'user_id', 'ip', 'title', 'created_at', 'updated_at');
-        if (! in_array($orderby, $allowed_orderby, true)) {
-            $orderby = 'ID';
-        }
-
-        $offset = ($page - 1) * $per_page;
-
-        $join            = '';
-        $where_clauses   = array('1=1');
-        $search_clauses  = array();
-
-        /**
-         * Search billic
-         */
-        if ($search !== '') {
-            $join = "LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID";
-
-            $like = '%' . $wpdb->esc_like($search) . '%';
-
-            $search_clauses[] = $wpdb->prepare('u.display_name LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('l.ip LIKE %s', $like);
-            $search_clauses[] = $wpdb->prepare('l.title LIKE %s', $like);
-
-            // Date search only if valid YYYY-MM-DD
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
-                $search_clauses[] = $wpdb->prepare('DATE(l.created_at) = %s', $search);
-            }
-        }
-
-        if (! empty($search_clauses)) {
-            $where_clauses[] = '(' . implode(' OR ', $search_clauses) . ')';
-        }
-
-        /**
-         * Time-based filter (today, week, month)
-         */
-        if (! empty($filter) && $filter !== 'any') {
-            $current_date = gmdate('Y-m-d');
-            switch ($filter) {
-                case 'today':
-                    $where_clauses[] = $wpdb->prepare('DATE(l.created_at) = %s', $current_date);
-                    break;
-                case 'week':
-                    $week_start = gmdate('Y-m-d', strtotime('this week monday'));
-                    $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', $week_start);
-                    break;
-                case 'month':
-                    $month_start = gmdate('Y-m-01');
-                    $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', $month_start);
-                    break;
-            }
-        }
-
-        /**
-         * Date range filter
-         */
-        if (! empty($date_from)) {
-            $where_clauses[] = $wpdb->prepare('DATE(l.created_at) >= %s', sanitize_text_field($date_from));
-        }
-
-        if (! empty($date_to)) {
-            $where_clauses[] = $wpdb->prepare('DATE(l.created_at) <= %s', sanitize_text_field($date_to));
-        }
-
-        /**
-         * Build prepared where clause with placeholders
-         */
-        $prepared_where = '1=1';
-        $where_params = array();
-
-        if ($search !== '') {
-            $join = "LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID";
-            $like = '%' . $wpdb->esc_like($search) . '%';
-            $prepared_where .= " AND (u.display_name LIKE %s OR l.ip LIKE %s OR l.title LIKE %s";
-            $where_params[] = $like;
-            $where_params[] = $like;
-            $where_params[] = $like;
-
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
-                $prepared_where .= " OR DATE(l.created_at) = %s";
-                $where_params[] = $search;
-            }
-            $prepared_where .= ')';
-        }
-
-        if (! empty($filter) && $filter !== 'any') {
-            $current_date = gmdate('Y-m-d');
-            if ($filter === 'today') {
-                $prepared_where .= " AND DATE(l.created_at) = %s";
-                $where_params[] = $current_date;
-            } elseif ($filter === 'week') {
-                $week_start = gmdate('Y-m-d', strtotime('this week monday'));
-                $prepared_where .= " AND DATE(l.created_at) >= %s";
-                $where_params[] = $week_start;
-            } elseif ($filter === 'month') {
-                $month_start = gmdate('Y-m-01');
-                $prepared_where .= " AND DATE(l.created_at) >= %s";
-                $where_params[] = $month_start;
-            }
-        }
-
-        if (! empty($date_from)) {
-            $prepared_where .= " AND DATE(l.created_at) >= %s";
-            $where_params[] = sanitize_text_field($date_from);
-        }
-
-        if (! empty($date_to)) {
-            $prepared_where .= " AND DATE(l.created_at) <= %s";
-            $where_params[] = sanitize_text_field($date_to);
-        }
-
-        /**
-         * Total count query
-         */
-        $count_query = $wpdb->prepare(
-            "SELECT COUNT(*)
-            FROM {$bills_table} l
-            {$join}
-            WHERE {$prepared_where}",
-            ...$where_params
+        $page = max(
+            1,
+            absint( $request->get_param( 'page' ) ?: 1 )
         );
 
-        $total = (int) $wpdb->get_var($count_query);
-
-        /**
-         * Data query - add per_page and offset to params
-         */
-        $data_query_params = $where_params;
-        $data_query_params[] = $per_page;
-        $data_query_params[] = $offset;
-
-        $data_query = $wpdb->prepare(
-            "SELECT l.*, u.display_name AS user_name, u.user_login, u.user_email
-            FROM {$bills_table} l
-            LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
-            WHERE {$prepared_where}
-            ORDER BY l.{$orderby} {$order}
-            LIMIT %d OFFSET %d",
-            ...$data_query_params
+        $per_page = min(
+            100,
+            max(
+                1,
+                absint( $request->get_param( 'per_page' ) ?: 10 )
+            )
         );
 
-        $results = $wpdb->get_results($data_query, ARRAY_A);
+        $offset = ( $page - 1 ) * $per_page;
 
-        return new WP_REST_Response(
-            array(
-                'success'      => true,
-                'data'         => $results,
-                'total'        => $total,
-                'page'         => $page,
-                'per_page'     => $per_page,
-                'total_pages'  => (int) ceil($total / $per_page),
-            ),
-            200
+        $search = trim(
+            (string) $request->get_param( 'search' )
+        );
+
+        $bill_type = sanitize_key(
+            $request->get_param( 'bill_type' )
+        );
+
+        $orderby = sanitize_key(
+            $request->get_param( 'orderby' ) ?: 'bill_date'
+        );
+
+        $order = strtolower(
+            $request->get_param( 'order' ) ?: 'desc'
+        );
+
+        $date_from = trim(
+            (string) $request->get_param( 'date_from' )
+        );
+
+        $date_to = trim(
+            (string) $request->get_param( 'date_to' )
+        );
+
+        /*
+        * Whitelist ORDER BY columns.
+        */
+        $orderby_map = [
+            'id'       => 'b.ID',
+            'bill_no'  => 'b.bill_no',
+            'company'  => 'c.title',
+            'type'     => 'b.bill_type',
+            'amount'   => 'bill_amount',
+            'paid'     => 'paid_amount',
+            'balance'  => 'bill_balance',
+            'date'     => 'b.bill_date',
+            'bill_date'=> 'b.bill_date',
+        ];
+
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'b.bill_date';
+
+        $order_sql = 'asc' === $order ? 'ASC' : 'DESC';
+
+        /*
+        * WHERE conditions.
+        */
+        $where  = [ '1=1' ];
+        $params = [];
+
+        if ( $search !== '' ) {
+
+            $search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+            $where[] = '(
+                b.bill_no LIKE %s
+                OR b.reference_no LIKE %s
+                OR c.title LIKE %s
+            )';
+
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+        if ( in_array( $bill_type, [ 'sale', 'purchase' ], true ) ) {
+
+            $where[]  = 'b.bill_type = %s';
+            $params[] = $bill_type;
+        }
+
+        if ( $date_from !== '' ) {
+
+            $where[]  = 'b.bill_date >= %s';
+            $params[] = $date_from . ' 00:00:00';
+        }
+
+        if ( $date_to !== '' ) {
+
+            $where[]  = 'b.bill_date <= %s';
+            $params[] = $date_to . ' 23:59:59';
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        /*
+        * Get bills.
+        */
+        $sql = "
+            SELECT
+
+                b.*,
+
+                c.title AS company_name,
+
+                COALESCE(
+                    bt.bill_amount,
+                    0
+                ) AS bill_amount,
+
+                COALESCE(
+                    pt.paid_amount,
+                    0
+                ) AS paid_amount
+
+            FROM {$bills_table} b
+
+            LEFT JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            /*
+            * Calculate bill amount.
+            */
+            LEFT JOIN (
+
+                SELECT
+
+                    b2.ID AS bill_id,
+
+                    (
+                        COALESCE(
+                            SUM(
+                                (
+                                    bi.quantity * bi.unit_price
+                                )
+                            ),
+                            0
+                        )
+
+                        - COALESCE( b2.discount, 0 )
+                        + COALESCE( b2.tax, 0 )
+                        + COALESCE( b2.shipping, 0 )
+
+                    ) AS bill_amount
+
+                FROM {$bills_table} b2
+
+                LEFT JOIN {$items_table} bi
+                    ON bi.bill_id = b2.ID
+
+                GROUP BY b2.ID
+
+            ) bt
+                ON bt.bill_id = b.ID
+
+            /*
+            * Calculate total payments.
+            */
+            LEFT JOIN (
+
+                SELECT
+
+                    bill_id,
+
+                    SUM( paid_amount ) AS paid_amount
+
+                FROM {$payments_table}
+
+                GROUP BY bill_id
+
+            ) pt
+                ON pt.bill_id = b.ID
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare( $sql, $params ),
+            ARRAY_A
+        );
+
+        /*
+        * Total number of bills.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$bills_table} b
+
+            LEFT JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+        ";
+
+        $count_params = array_slice(
+            $params,
+            0,
+            count( $params ) - 2
+        );
+
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                $count_sql,
+                $count_params
+            )
+        );
+
+        /*
+        * Prepare every bill.
+        */
+        foreach ( $results as &$bill ) {
+
+            $bill_id = (int) $bill['ID'];
+
+            $amount = (float) $bill['bill_amount'];
+            $paid   = (float) $bill['paid_amount'];
+
+            $balance = $amount - $paid;
+
+            /*
+            * Status.
+            */
+            if ( $paid <= 0 ) {
+
+                $payment_status = 'due';
+
+            } elseif ( $paid < $amount ) {
+
+                $payment_status = 'partially_paid';
+
+            } elseif ( $paid == $amount ) {
+
+                $payment_status = 'paid';
+
+            } else {
+
+                $payment_status = 'over_paid';
+            }
+
+            /*
+            * Company.
+            */
+            $bill['company'] = [
+                'id'    => (int) $bill['company_id'],
+                'title' => $bill['company_name'],
+            ];
+
+            unset( $bill['company_name'] );
+
+            /*
+            * Financial information.
+            */
+            $bill['amount'] = number_format(
+                $amount,
+                2,
+                '.',
+                ''
+            );
+
+            $bill['paid'] = number_format(
+                $paid,
+                2,
+                '.',
+                ''
+            );
+
+            $bill['balance'] = number_format(
+                abs( $balance ),
+                2,
+                '.',
+                ''
+            );
+
+            $bill['payment_status'] = $payment_status;
+
+            /*
+            * Payments.
+            */
+            $bill['payments'] = $wpdb->get_results(
+                $wpdb->prepare(
+                    "
+                    SELECT
+                        ID AS id,
+                        payment_date AS date,
+                        paid_amount AS amount
+                    FROM {$payments_table}
+                    WHERE bill_id = %d
+                    ORDER BY payment_date DESC, ID DESC
+                    ",
+                    $bill_id
+                ),
+                ARRAY_A
+            );
+
+            foreach ( $bill['payments'] as &$payment ) {
+
+                $payment['id'] = (int) $payment['id'];
+
+                $payment['amount'] = number_format(
+                    (float) $payment['amount'],
+                    2,
+                    '.',
+                    ''
+                );
+            }
+
+            /*
+            * Items.
+            */
+            $bill['items'] = $wpdb->get_results(
+                $wpdb->prepare(
+                    "
+                    SELECT
+                        ID AS id,
+                        title,
+                        quantity,
+                        unit,
+                        unit_price,
+                        discount,
+                        tax,
+                        notes,
+                        created_at,
+                        updated_at
+                    FROM {$items_table}
+                    WHERE bill_id = %d
+                    ORDER BY ID ASC
+                    ",
+                    $bill_id
+                ),
+                ARRAY_A
+            );
+
+            foreach ( $bill['items'] as &$item ) {
+
+                $quantity   = (float) $item['quantity'];
+                $unit_price = (float) $item['unit_price'];
+                $discount   = (float) $item['discount'];
+                $tax        = (float) $item['tax'];
+
+                $item_total =
+                    ( $quantity * $unit_price )
+                    - $discount
+                    + $tax;
+
+                $item['id'] = (int) $item['id'];
+
+                $item['quantity'] = number_format(
+                    $quantity,
+                    2,
+                    '.',
+                    ''
+                );
+
+                $item['unit_price'] = number_format(
+                    $unit_price,
+                    2,
+                    '.',
+                    ''
+                );
+
+                $item['discount'] = number_format(
+                    $discount,
+                    2,
+                    '.',
+                    ''
+                );
+
+                $item['tax'] = number_format(
+                    $tax,
+                    2,
+                    '.',
+                    ''
+                );
+
+                $item['total'] = number_format(
+                    $item_total,
+                    2,
+                    '.',
+                    ''
+                );
+            }
+
+            /*
+            * Remove internal calculated fields.
+            */
+            unset( $bill['bill_amount'] );
+            unset( $bill['paid_amount'] );
+        }
+
+        unset( $bill );
+
+        return rest_ensure_response(
+            [
+                'data' => $results,
+
+                'pagination' => [
+                    'page'        => $page,
+                    'per_page'    => $per_page,
+                    'total'       => $total,
+                    'total_pages' => $per_page > 0
+                        ? (int) ceil( $total / $per_page )
+                        : 0,
+                ],
+            ]
         );
     }
 
@@ -1848,38 +2275,282 @@ class BillsController
      * @param WP_REST_Request $request Request object.
      * @return WP_REST_Response|WP_Error
      */
-    public static function get_bill(WP_REST_Request $request)
-    {
+    // public static function get_bill(WP_REST_Request $request)
+    // {
+    //     global $wpdb;
+    //     $bills_table = $wpdb->prefix . 'bill_manager_bills';
+
+    //     $id = absint($request->get_param('id'));
+
+    //     $query = $wpdb->prepare(
+    //         "SELECT l.*, u.display_name as user_name, u.user_login, u.user_email
+    //         FROM {$bills_table} l
+    //         LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
+    //         WHERE l.ID = %d",
+    //         $id
+    //     );
+
+    //     $result = $wpdb->get_row($query, ARRAY_A);
+
+    //     if (! $result) {
+    //         return new WP_Error(
+    //             'bill_not_found',
+    //             'Log entry not found',
+    //             array('status' => 404)
+    //         );
+    //     }
+
+    //     return new WP_REST_Response(
+    //         array(
+    //             'success' => true,
+    //             'data'    => $result,
+    //         ),
+    //         200
+    //     );
+    // }
+
+    public static function get_bill( WP_REST_Request $request ) {
+        $bill_id = absint($request->get_param('id'));
+
         global $wpdb;
-        $bills_table = $wpdb->prefix . 'bill_manager_bills';
 
-        $id = absint($request->get_param('id'));
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
 
-        $query = $wpdb->prepare(
-            "SELECT l.*, u.display_name as user_name, u.user_login, u.user_email
-            FROM {$bills_table} l
-            LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID
-            WHERE l.ID = %d",
-            $id
+        /*
+        * Bill.
+        */
+        $bill = $wpdb->get_row(
+            $wpdb->prepare(
+                "
+                SELECT
+                    b.*,
+                    c.title AS company_name
+                FROM {$bills_table} b
+                LEFT JOIN {$companies_table} c
+                    ON c.ID = b.company_id
+                WHERE b.ID = %d
+                LIMIT 1
+                ",
+                $bill_id
+            ),
+            ARRAY_A
         );
 
-        $result = $wpdb->get_row($query, ARRAY_A);
+        if ( ! $bill ) {
 
-        if (! $result) {
             return new WP_Error(
                 'bill_not_found',
-                'Log entry not found',
-                array('status' => 404)
+                __( 'Bill not found.', 'bill-manager' ),
+                [
+                    'status' => 404,
+                ]
             );
         }
 
-        return new WP_REST_Response(
-            array(
-                'success' => true,
-                'data'    => $result,
+        /*
+        * Items.
+        */
+        $items = $wpdb->get_results(
+            $wpdb->prepare(
+                "
+                SELECT
+                    ID AS id,
+                    title,
+                    quantity,
+                    unit,
+                    unit_price,
+                    discount,
+                    tax,
+                    notes,
+                    created_at,
+                    updated_at
+                FROM {$items_table}
+                WHERE bill_id = %d
+                ORDER BY ID ASC
+                ",
+                $bill_id
             ),
-            200
+            ARRAY_A
         );
+
+        $items_subtotal = 0;
+
+        foreach ( $items as &$item ) {
+
+            $quantity   = (float) $item['quantity'];
+            $unit_price = (float) $item['unit_price'];
+            $discount   = (float) $item['discount'];
+            $tax        = (float) $item['tax'];
+
+            $subtotal = $quantity * $unit_price;
+
+            $total = $subtotal - $discount + $tax;
+
+            $items_subtotal += $total;
+
+            $item['id'] = (int) $item['id'];
+
+            $item['quantity'] = number_format(
+                $quantity,
+                2,
+                '.',
+                ''
+            );
+
+            $item['unit_price'] = number_format(
+                $unit_price,
+                2,
+                '.',
+                ''
+            );
+
+            $item['discount'] = number_format(
+                $discount,
+                2,
+                '.',
+                ''
+            );
+
+            $item['tax'] = number_format(
+                $tax,
+                2,
+                '.',
+                ''
+            );
+
+            $item['total'] = number_format(
+                $total,
+                2,
+                '.',
+                ''
+            );
+        }
+
+        unset( $item );
+
+        /*
+        * Bill-level values.
+        */
+        $bill_discount = (float) $bill['discount'];
+        $bill_tax      = (float) $bill['tax'];
+        $shipping      = (float) $bill['shipping'];
+
+        $bill_amount =
+            $items_subtotal
+            - $bill_discount
+            + $bill_tax
+            + $shipping;
+
+        /*
+        * Payments.
+        */
+        $payments = $wpdb->get_results(
+            $wpdb->prepare(
+                "
+                SELECT
+                    ID AS id,
+                    payment_date AS date,
+                    paid_amount AS amount
+                FROM {$payments_table}
+                WHERE bill_id = %d
+                ORDER BY payment_date DESC, ID DESC
+                ",
+                $bill_id
+            ),
+            ARRAY_A
+        );
+
+        $paid_amount = 0;
+
+        foreach ( $payments as &$payment ) {
+
+            $payment_amount = (float) $payment['amount'];
+
+            $paid_amount += $payment_amount;
+
+            $payment['id'] = (int) $payment['id'];
+
+            $payment['amount'] = number_format(
+                $payment_amount,
+                2,
+                '.',
+                ''
+            );
+        }
+
+        unset( $payment );
+
+        /*
+        * Balance.
+        */
+        $balance = $bill_amount - $paid_amount;
+
+        if ( $paid_amount <= 0 ) {
+
+            $payment_status = 'due';
+
+        } elseif ( $paid_amount < $bill_amount ) {
+
+            $payment_status = 'partially_paid';
+
+        } elseif ( $paid_amount == $bill_amount ) {
+
+            $payment_status = 'paid';
+
+        } else {
+
+            $payment_status = 'over_paid';
+        }
+
+        /*
+        * Company.
+        */
+        $company = [
+            'id'    => (int) $bill['company_id'],
+            'title' => $bill['company_name'],
+        ];
+
+        /*
+        * Remove company_name from root.
+        */
+        unset( $bill['company_name'] );
+
+        /*
+        * Add calculated data.
+        */
+        $bill['company'] = $company;
+
+        $bill['amount'] = number_format(
+            $bill_amount,
+            2,
+            '.',
+            ''
+        );
+
+        $bill['paid'] = number_format(
+            $paid_amount,
+            2,
+            '.',
+            ''
+        );
+
+        $bill['balance'] = number_format(
+            abs( $balance ),
+            2,
+            '.',
+            ''
+        );
+
+        $bill['payment_status'] = $payment_status;
+
+        $bill['payments'] = $payments;
+
+        $bill['items'] = $items;
+
+        return $bill;
     }
 
     /**
@@ -2192,6 +2863,7 @@ class BillsController
         $bill_id     = sanitize_text_field(wp_unslash($request->get_param('bill_id')));
         $payment_date      = sanitize_text_field(wp_unslash($request->get_param('payment_date')));
         $paid_amount      = sanitize_text_field(wp_unslash($request->get_param('paid_amount')));
+        $paid_by      = sanitize_text_field(wp_unslash($request->get_param('paid_by')));
         $reference_no      = sanitize_text_field(wp_unslash($request->get_param('reference_no')));
         $notes      = sanitize_textarea_field(wp_unslash($request->get_param('notes')));
 
@@ -2205,13 +2877,14 @@ class BillsController
                 'bill_id'       => $bill_id,
                 'payment_date'  => $payment_date,
                 'paid_amount'   => $paid_amount,
+                'paid_by'       => $paid_by,
                 'reference_no'  => $reference_no,
                 'notes'         => $notes,
 
                 'created_at'    => current_time('mysql'),
                 'updated_at'    => current_time('mysql'),
             ],
-            ['%d', '%s', '%s', '%d', '%s', '%f', '%s', '%s', '%s', '%s']
+            // ['%d', '%s', '%s', '%d', '%s', '%f', '%s', '%s', '%s', '%s']
         );
 
         // $wpdb->insert() returns false on failure, or the number of rows affected on success.
@@ -2243,6 +2916,223 @@ class BillsController
                 ],
             ),
             200
+        );
+    }
+    public static function get_payments( WP_REST_Request $request ) {
+
+        global $wpdb;
+
+        $payments_table  = $wpdb->prefix . 'bill_manager_payments';
+        $bills_table     = $wpdb->prefix . 'bill_manager_bills';
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+
+        $page = max(
+            1,
+            absint( $request->get_param( 'page' ) ?: 1 )
+        );
+
+        $per_page = min(
+            100,
+            max(
+                1,
+                absint( $request->get_param( 'per_page' ) ?: 10 )
+            )
+        );
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        $search = trim(
+            (string) $request->get_param( 'search' )
+        );
+
+        $orderby = sanitize_key(
+            $request->get_param( 'orderby' ) ?: 'payment_date'
+        );
+
+        $order = strtolower(
+            $request->get_param( 'order' ) ?: 'desc'
+        );
+
+        $date_from = trim(
+            (string) $request->get_param( 'date_from' )
+        );
+
+        $date_to = trim(
+            (string) $request->get_param( 'date_to' )
+        );
+
+        /*
+        * Whitelist sortable columns.
+        */
+        $orderby_map = [
+            'id'       => 'p.ID',
+            'bill_id'  => 'p.bill_id',
+            'bill_no'  => 'b.bill_no',
+            'company'  => 'c.title',
+            'amount'   => 'p.paid_amount',
+            'method'   => 'p.payment_method',
+            'paid_by'  => 'p.paid_by',
+            'date'     => 'p.payment_date',
+        ];
+
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'p.payment_date';
+
+        $order_sql = 'asc' === $order ? 'ASC' : 'DESC';
+
+        /*
+        * WHERE.
+        */
+        $where  = [ '1=1' ];
+        $params = [];
+
+        if ( $search !== '' ) {
+
+            $search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+            $where[] = '(
+                b.bill_no LIKE %s
+                OR c.title LIKE %s
+                OR p.paid_by LIKE %s
+                OR p.reference_no LIKE %s
+            )';
+
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+        if ( $date_from !== '' ) {
+
+            $where[]  = 'p.payment_date >= %s';
+            $params[] = $date_from . ' 00:00:00';
+        }
+
+        if ( $date_to !== '' ) {
+
+            $where[]  = 'p.payment_date <= %s';
+            $params[] = $date_to . ' 23:59:59';
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        /*
+        * Query.
+        */
+        $sql = "
+            SELECT
+
+                p.*,
+
+                c.title AS company_name,
+
+                b.bill_no,
+
+                b.bill_type
+
+            FROM {$payments_table} p
+
+            INNER JOIN {$bills_table} b
+                ON b.ID = p.bill_id
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                $sql,
+                $params
+            ),
+            ARRAY_A
+        );
+
+        /*
+        * Total records.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$payments_table} p
+
+            INNER JOIN {$bills_table} b
+                ON b.ID = p.bill_id
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+        ";
+
+        $count_params = array_slice(
+            $params,
+            0,
+            count( $params ) - 2
+        );
+
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                $count_sql,
+                $count_params
+            )
+        );
+
+        /*
+        * Format response.
+        */
+        foreach ( $results as &$payment ) {
+
+            $payment['ID'] = (int) $payment['ID'];
+
+            $payment['bill_id'] = (int) $payment['bill_id'];
+
+            $payment['paid_amount'] = number_format(
+                (float) $payment['paid_amount'],
+                2,
+                '.',
+                ''
+            );
+
+            $payment['company'] = [
+                'id'    => (int) $payment['company_id'],
+                'title' => $payment['company_name'],
+            ];
+
+            $payment['bill'] = [
+                'id'   => (int) $payment['bill_id'],
+                'no'   => $payment['bill_no'],
+                'type' => $payment['bill_type'],
+            ];
+
+            unset( $payment['company_name'] );
+            unset( $payment['bill_no'] );
+            unset( $payment['bill_type'] );
+        }
+
+        unset( $payment );
+
+        return rest_ensure_response(
+            [
+                'data' => $results,
+
+                'pagination' => [
+                    'page'        => $page,
+                    'per_page'    => $per_page,
+                    'total'       => $total,
+                    'total_pages' => $per_page > 0
+                        ? (int) ceil( $total / $per_page )
+                        : 0,
+                ],
+            ]
         );
     }
 }

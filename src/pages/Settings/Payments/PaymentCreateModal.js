@@ -14,8 +14,19 @@ export default function PaymentCreateModal({ show, setShow, setReloadTable }) {
     const [billID, setBillID] = useState('');
     const [paymentDate, setPaymentDate] = useState('');
     const [paidAmount, setPaidAmount] = useState(0);
+    const [paidBy, setPaidBy] = useState('');
     const [referenceNo, setReferenceNo] = useState('');
     const [notes, setNotes] = useState('');
+    /*
+    bill_id bigint(20) unsigned NOT NULL,
+    payment_date datetime NOT NULL,
+    paid_amount decimal(12,2) NOT NULL,
+    paid_by varchar(255) NULL,
+
+    reference_no varchar(100) NULL,
+
+    notes text NULL,
+    */
 
     const [loading, setLoading] = useState(false);
 
@@ -72,6 +83,7 @@ export default function PaymentCreateModal({ show, setShow, setReloadTable }) {
                         bill_id: billID,
                         payment_date: paymentDate,
                         paid_amount: paidAmount,
+                        paid_by: paidBy,
                         reference_no: referenceNo,
                         notes: notes,
 
@@ -86,6 +98,7 @@ export default function PaymentCreateModal({ show, setShow, setReloadTable }) {
                     setBillID('');
                     setPaymentDate('');
                     setPaidAmount('');
+                    setPaidBy('');
                     setReferenceNo('');
                     setNotes('');
 
@@ -195,7 +208,6 @@ export default function PaymentCreateModal({ show, setShow, setReloadTable }) {
                                 </FloatingLabel>
                             </Col>
                             <Col md={6}>
-
                                 <FloatingLabel
                                     controlId="reference_no"
                                     label={__('Reference No', 'bill-manager')}
@@ -211,8 +223,22 @@ export default function PaymentCreateModal({ show, setShow, setReloadTable }) {
                             </Col>
                         </Row>
                         <Row>
+
                             <Col md={12}>
-                                
+                                <FloatingLabel
+                                    controlId="paid_by"
+                                    label={__('Paid By', 'bill-manager')}
+                                    className="mb-3"
+                                >
+                                    <Form.Control
+                                        type="text"
+                                        placeholder={__('Paid By', 'bill-manager')}
+                                        value={paidBy}
+                                        onChange={(e) => setPaidBy(e.target.value)}
+                                    />
+                                </FloatingLabel>
+                            </Col>
+                            <Col md={12}>                                
                                 <FloatingLabel
                                     controlId="notes"
                                     label={__('Notes', 'bill-manager')}

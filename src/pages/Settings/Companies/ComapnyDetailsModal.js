@@ -4,6 +4,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { Row, Col, Button, Modal, Spinner, Card } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table'; // This will be replaced with the DataTable component in the future
 import CompanyBills from './CompanyBills'; // Import the CompanyBills component
+import CompanyPayments from './CompanyPayments'; // Import the CompanyPayments component
 export default function ComapnyDetailsModal({ show, setShow, id }) {
     // const [show, setShow] = useState(false);
     const [dataDetailsModal, setDataDetailsModal] = useState([]);
@@ -189,7 +190,8 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
 
                             <h6 className="h6">{__('Recent Bills', 'bill-manager')}</h6>
                             <CompanyBills id={1} />
-                            <Table striped bordered hover>
+
+                            {/* <Table striped bordered hover>
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -225,11 +227,11 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                                         <th>{__('Date 2', 'bill-manager')}</th>
                                     </tr>
                                 </tbody>
-                            </Table>
+                            </Table> */}
 
                             <h6 className="h6">{__('Recent Payments', 'bill-manager')}</h6>
-
-                            <Table striped bordered hover>
+                            <CompanyPayments id={1} />
+                            {/* <Table striped bordered hover>
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -251,7 +253,7 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                                         <th>{__('Date', 'bill-manager')}</th>
                                     </tr>
                                 </tbody>
-                            </Table>
+                            </Table> */}
                             {
                                 dataDetailsModal?.notes && (
                                     <>

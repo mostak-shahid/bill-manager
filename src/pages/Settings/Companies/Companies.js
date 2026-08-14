@@ -12,6 +12,7 @@ import DataTable from 'react-data-table-component';
 import { useWindowWidth } from '../../../lib/Helpers';
 import '../Logs/ResponsiveTable.css';
 import { ToastControl } from "../../../components";
+
 import CompanyCreateModal from "./CompanyCreateModal";
 import ComapnyDetailsModal from "./ComapnyDetailsModal";
 import ComapnyEditModal from "./ComapnyEditModal";
