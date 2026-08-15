@@ -2516,7 +2516,7 @@ class BillsController
         /*
         * Remove company_name from root.
         */
-        unset( $bill['company_name'] );
+        // unset( $bill['company_name'] );
 
         /*
         * Add calculated data.
@@ -2550,7 +2550,14 @@ class BillsController
 
         $bill['items'] = $items;
 
-        return $bill;
+        // return $bill;
+        return new WP_REST_Response(
+            [                
+                'success' => true,
+                'data' => $bill
+            ],
+            200
+        );
     }
 
     /**
@@ -2919,6 +2926,13 @@ class BillsController
         );
     }
     public static function get_payments( WP_REST_Request $request ) {
+        // if (!current_user_can('manage_options')) {
+        //     return new WP_Error(
+        //         'rest_update_error',
+        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
+        //         array('status' => 403)
+        //     );
+        // }
 
         global $wpdb;
 
@@ -2946,11 +2960,14 @@ class BillsController
         );
 
         $orderby = sanitize_key(
-            $request->get_param( 'orderby' ) ?: 'payment_date'
+            $request->get_param( 'sort_field' ) ?: 'created_at'
         );
 
         $order = strtolower(
-            $request->get_param( 'order' ) ?: 'desc'
+            $request->get_param( 'sort_order' ) ?: 'desc'
+        );
+        $filter = strtolower(
+            $request->get_param( 'filter' ) ?: 'any'
         );
 
         $date_from = trim(
@@ -2960,6 +2977,7 @@ class BillsController
         $date_to = trim(
             (string) $request->get_param( 'date_to' )
         );
+        // error_log("get_payments called with params: " . print_r($request->get_params(), true));
 
         /*
         * Whitelist sortable columns.
@@ -2968,14 +2986,14 @@ class BillsController
             'id'       => 'p.ID',
             'bill_id'  => 'p.bill_id',
             'bill_no'  => 'b.bill_no',
-            'company'  => 'c.title',
-            'amount'   => 'p.paid_amount',
-            'method'   => 'p.payment_method',
+            'company_title'  => 'c.title',
+            'paid_amount'   => 'p.paid_amount',
             'paid_by'  => 'p.paid_by',
-            'date'     => 'p.payment_date',
+            'bill_type' => 'b.bill_type',
+            'created_at'     => 'p.created_at',
         ];
 
-        $orderby_sql = $orderby_map[ $orderby ] ?? 'p.payment_date';
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'p.created_at';
 
         $order_sql = 'asc' === $order ? 'ASC' : 'DESC';
 
@@ -2992,6 +3010,8 @@ class BillsController
             $where[] = '(
                 b.bill_no LIKE %s
                 OR c.title LIKE %s
+                OR b.bill_type LIKE %s
+                OR p.paid_amount LIKE %s
                 OR p.paid_by LIKE %s
                 OR p.reference_no LIKE %s
             )';
@@ -3000,61 +3020,50 @@ class BillsController
             $params[] = $search_like;
             $params[] = $search_like;
             $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+
+
+        /**
+         * Time-based filter (today, week, month)
+         */
+        if (! empty($filter) && $filter !== 'any') {
+            $current_date = gmdate('Y-m-d');
+            if ($filter === 'today') {
+
+                $where[]  = 'p.created_at = %s';
+                $params[] = $current_date . ' 00:00:00';
+
+                // $prepared_where .= " AND DATE(p.created_at) = %s";
+                // $where_params[] = $current_date;
+
+            } elseif ($filter === 'week') {
+                $week_start = gmdate('Y-m-d', strtotime('this week monday'));
+                $where[]  = "p.created_at >= %s";
+                $params[] = $week_start;
+            } elseif ($filter === 'month') {
+                $month_start = gmdate('Y-m-01');
+                $where[]  = "p.created_at >= %s";
+                $params[] = $month_start;
+            }
         }
 
         if ( $date_from !== '' ) {
 
-            $where[]  = 'p.payment_date >= %s';
+            $where[]  = 'p.created_at >= %s';
             $params[] = $date_from . ' 00:00:00';
         }
 
         if ( $date_to !== '' ) {
 
-            $where[]  = 'p.payment_date <= %s';
+            $where[]  = 'p.created_at <= %s';
             $params[] = $date_to . ' 23:59:59';
         }
 
         $where_sql = implode( ' AND ', $where );
 
-        /*
-        * Query.
-        */
-        $sql = "
-            SELECT
-
-                p.*,
-
-                c.title AS company_name,
-
-                b.bill_no,
-
-                b.bill_type
-
-            FROM {$payments_table} p
-
-            INNER JOIN {$bills_table} b
-                ON b.ID = p.bill_id
-
-            INNER JOIN {$companies_table} c
-                ON c.ID = b.company_id
-
-            WHERE {$where_sql}
-
-            ORDER BY {$orderby_sql} {$order_sql}
-
-            LIMIT %d OFFSET %d
-        ";
-
-        $params[] = $per_page;
-        $params[] = $offset;
-
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                $sql,
-                $params
-            ),
-            ARRAY_A
-        );
 
         /*
         * Total records.
@@ -3087,52 +3096,116 @@ class BillsController
         );
 
         /*
+        * Query.
+        */
+        $sql = "
+            SELECT
+
+                p.*,
+
+                b.company_id,
+
+                c.title AS company_title,
+
+                b.bill_no,
+
+                b.bill_type
+
+
+            FROM {$payments_table} p
+
+            INNER JOIN {$bills_table} b
+                ON b.ID = p.bill_id
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                $sql,
+                $params
+            ),
+            ARRAY_A
+        );
+
+        /*
         * Format response.
         */
-        foreach ( $results as &$payment ) {
+        // foreach ( $results as &$payment ) {
 
-            $payment['ID'] = (int) $payment['ID'];
+        //     $payment['ID'] = (int) $payment['ID'];
 
-            $payment['bill_id'] = (int) $payment['bill_id'];
+        //     $payment['bill_id'] = (int) $payment['bill_id'];
 
-            $payment['paid_amount'] = number_format(
-                (float) $payment['paid_amount'],
-                2,
-                '.',
-                ''
-            );
+        //     $payment['paid_amount'] = number_format(
+        //         (float) $payment['paid_amount'],
+        //         2,
+        //         '.',
+        //         ''
+        //     );
 
-            $payment['company'] = [
-                'id'    => (int) $payment['company_id'],
-                'title' => $payment['company_name'],
-            ];
+        //     $payment['company'] = [
+        //         'id'    => (int) $payment['company_id'],
+        //         'title' => $payment['company_name'],
+        //     ];
 
-            $payment['bill'] = [
-                'id'   => (int) $payment['bill_id'],
-                'no'   => $payment['bill_no'],
-                'type' => $payment['bill_type'],
-            ];
+        //     $payment['bill'] = [
+        //         'id'   => (int) $payment['bill_id'],
+        //         'no'   => $payment['bill_no'],
+        //         'type' => $payment['bill_type'],
+        //     ];
 
-            unset( $payment['company_name'] );
-            unset( $payment['bill_no'] );
-            unset( $payment['bill_type'] );
-        }
+        //     unset( $payment['company_name'] );
+        //     unset( $payment['bill_no'] );
+        //     unset( $payment['bill_type'] );
+        // }
 
-        unset( $payment );
-
-        return rest_ensure_response(
-            [
+        // unset( $payment );
+        return new WP_REST_Response(
+            [                
+                'success' => true,
                 'data' => $results,
+                // 'sql' => $sql,
+                // 'query' => $wpdb->last_query,
 
-                'pagination' => [
+                // 'pagination' => [
                     'page'        => $page,
                     'per_page'    => $per_page,
                     'total'       => $total,
                     'total_pages' => $per_page > 0
                         ? (int) ceil( $total / $per_page )
                         : 0,
-                ],
-            ]
+                // ],
+            ],
+            200
         );
+
+        // return rest_ensure_response(
+        //     [
+        //         'success' => true,
+        //         'data' => $results,
+        //         'sql' => $sql,
+        //         'query' => $wpdb->last_query,
+
+        //         // 'pagination' => [
+        //             'page'        => $page,
+        //             'per_page'    => $per_page,
+        //             'total'       => $total,
+        //             'total_pages' => $per_page > 0
+        //                 ? (int) ceil( $total / $per_page )
+        //                 : 0,
+        //         // ],
+        //     ]
+        // );
     }
 }

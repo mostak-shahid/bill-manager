@@ -10,7 +10,13 @@
         "text": "Bills",
         "description": "Share feedback, report issues, or suggest improvements.",
         "url": "/settings/bills"
-    },    
+    },   
+    {
+        "itemKey": "payments",
+        "text": "Payments",
+        "description": "Share feedback, report issues, or suggest improvements.",
+        "url": "/settings/payments"
+    },   
     { "itemKey": "inputs", "text": "Inputs", "url": "/settings/companies/",
         "items": [            
             {

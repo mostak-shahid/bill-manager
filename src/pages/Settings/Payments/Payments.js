@@ -13,14 +13,13 @@ import { useWindowWidth } from '../../../lib/Helpers';
 import '../Logs/ResponsiveTable.css';
 import { ToastControl } from "../../../components";
 
-import BillCreateModal from './BillCreateModal'
-import './Bills.css'
-import PaymentCreateModal from "../Payments/PaymentCreateModal";
+import PaymentCreateModal from './PaymentCreateModal'
+import './Payments.css'
 
 const timeFilterOptions = [
     { label: __('All Time', 'bill-manager'), value: 'any' },
     { label: __('Today', 'bill-manager'), value: 'today' },
-    { label: __('Last 7 Days', 'bill-manager'), value: 'week' },
+    { label: __('This Week', 'bill-manager'), value: 'week' },
     { label: __('This Month', 'bill-manager'), value: 'month' },
 ];
 const bulkActions = [
@@ -31,7 +30,8 @@ const bulkActions = [
 // 2. Define the Expanded Component to show hidden column data on mobile
 const ExpandedComponent = ({ data }) => (
     <div className="expanded-row-container">
-
+        <p><strong>{__('Notes:', 'bill-manager')}</strong> {data.notes}</p>
+        <p><strong>{__('Reference No:', 'bill-manager')}</strong> {data.reference_no}</p>
         {/* <p><strong>User Name:</strong> <strong>{data.user_name}</strong>ID:({data.user_id})</p>
         <p><strong>User ID:</strong> ({data.user_id})</p>
         <p><strong>User Email:</strong> {data.user_email}</p>
@@ -44,7 +44,9 @@ const ExpandedComponent = ({ data }) => (
         <p className="show-on-sm"><strong>Created Date:</strong> {data.created_at}</p> */}
     </div>
 );
-export default function Bills() {
+
+export default function Payments() {
+
     const { settings, settingsLoading, handleChange } = useOutletContext();
     // Add this inside your component
     const containerRef = useRef(null);
@@ -107,12 +109,12 @@ export default function Bills() {
             // console.log('Fetching companies with params:', queryString);
 
             const response = await apiFetch({
-                path: `/bill-manager/v1/bills?${queryString}`,
+                path: `/bill-manager/v1/payments?${queryString}`,
             });
             setData(response.data || []);
             setTotal(response.total || 0);
         } catch (error) {
-            console.error('Error fetching companies:', error);
+            console.error('Error fetching payments:', error);
         } finally {
             setLoading(false);
         }
@@ -132,18 +134,16 @@ export default function Bills() {
         reloadTable,
     ]);
 
-    const [showBillCreateModal, setShowBillCreateModal] = useState(false);
-    const [showPaymentCreateModal, setShowPaymentCreateModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
 
     const columns = [
-        // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
-        { name: 'Company', id: 'c.title', selector: row => row.company.title, sortable: true, pinned: 'left' },
+        // { name: '#', id: 'id', selector: row => row.ID, sortable: true },
+        { name: 'Company', id: 'company_title', selector: row => row.company_title, sortable: true, pinned: 'left' },
         { name: 'Bill No', id: 'bill_no', selector: row => row.bill_no, sortable: true, hide: 'sm' },
         { name: 'Bill Type', id: 'bill_type', selector: row => row.bill_type, sortable: true, hide: 'sm' },
-        { name: 'Amount', id: 'c.email', selector: row => row.amount, sortable: true, hide: 'md', },
-        { name: 'Paid', id: 'c.address', selector: row => row.paid, sortable: true, hide: 'lg', },
-        { name: 'Balance', id: 'c.address', selector: row => row.balance, sortable: true, hide: 'lg', },
-        { name: 'Payment Status', id: 'c.address', selector: row => row.payment_status, sortable: true, hide: 'lg', },
+        { name: 'Paid', id: 'paid_amount', selector: row => row.paid_amount, sortable: true, hide: 'md', },
+        { name: 'Paid By', id: 'c.email', selector: row => row.paid_by, sortable: true, hide: 'md', },
         { name: 'Created At', id: 'c.address', selector: row => row.created_at, sortable: true, hide: 'lg', },
 
         // {
@@ -183,38 +183,34 @@ export default function Bills() {
         //     pinned: 'right'
         // },
     ];
-/*
+    /*
+    | Payment ID | Bill No. | Company | Type | Amount | Method | Paid By | Date | Actions |
+| ---------- | -------- | ------- | ---- | -----: | ------ | ------- | ---- | ------- |
 
-{
-"ID": "4",
-"user_id": "1",
-"ip": "::1",
-"user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
-"company_id": "1",
-"bill_no": "bill-xyz123abcxyz",
-"bill_type": "",
-"bill_date": "2026-08-11 00:00:00",
-"discount": "1000.00",
-"ait": "10.00",
-"tax": "20.00",
-"vat": "30.00",
-"shipping": "50.00",
-"notes": "Tota ltesting",
-"status": "1",
-"created_at": "2026-08-09 19:35:08",
-"updated_at": "2026-08-09 19:35:08",
-"company": {
-    "id": 1,
-    "title": "ABC Company"
-},
-"amount": "9070.00",
-"paid": "0.00",
-"balance": "9070.00",
-"payment_status": "due",
-"payments": [],
-"items": []
-},
-*/
+    {
+        "ID": 4,
+        "user_id": "1",
+        "ip": "::1",
+        "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+        "bill_id": 2,
+        "payment_date": "2026-08-20 00:00:00",
+        "paid_amount": "3000.00",
+        "paid_by": "Md. Mostak Shahid",
+        "reference_no": "ABC 112",
+        "notes": "Kono notes nai",
+        "created_at": "2026-08-14 18:22:59",
+        "updated_at": "2026-08-14 18:22:59",
+        "company": {
+            "id": 0,
+            "title": "Toto Company"
+        },
+        "bill": {
+            "id": 2,
+            "no": "bill-xyz123toto",
+            "type": "purchase"
+        }
+    }
+    */
     const handleBulkAction = () => {
         // console.log('selectedRowIDs: ', selectedRowIDs, 'bulkAction: ', bulkAction);
         if (selectedRowKeys.length) {
@@ -273,19 +269,12 @@ export default function Bills() {
                     </div>
                 </div>
                 <div className="text-center text-lg-end order-0 order-lg-1" style={{ width: '100%', maxWidth: 350 }}>
-                    <div className="mt-1 mt-lg-3">
+                    <div className="mt-1 mt-lg-3">                        
                         <Button
                             variant="outline-primary"
-                            onClick={() => setShowBillCreateModal(true)}
+                            onClick={() => setShowCreateModal(true)}
                         >
-                            {__('Add Bill', 'bill-manager')}
-                        </Button>
-                        <Button
-                            className="ms-2"
-                            variant="outline-primary"
-                            onClick={() => setShowPaymentCreateModal(true)}
-                        >
-                            {__('Add Payment', 'bill-manager')}
+                            {__('Add New', 'bill-manager')}
                         </Button>
                     </div>
                 </div>
@@ -374,9 +363,7 @@ export default function Bills() {
                 />
 
             </div>
-
-            <BillCreateModal show={showBillCreateModal} setShow={setShowBillCreateModal} setReloadTable={setReloadTable} />
-            <PaymentCreateModal show={showPaymentCreateModal} setShow={setShowPaymentCreateModal} setReloadTable={setReloadTable} />
+            <PaymentCreateModal show={showCreateModal} setShow={setShowCreateModal} setReloadTable={setReloadTable} />
 
             <ToastControl
                 show={showToast}

@@ -2,6 +2,7 @@ import Dashboard from './Dashboard/Dashboard';
 import Settings from './Settings/Settings';
 import Companies from './Settings/Companies/Companies';
 import Bills from './Settings/Bills/Bills';
+import Payments from './Settings/Payments/Payments';
 import SingleCompany from './Settings/Companies/SingleCompany';
 import BasicInputs from './Settings/BasicInputs';
 
@@ -31,6 +32,7 @@ export {
     Settings,
     Companies,
     Bills,
+    Payments,
     SingleCompany,
     BasicInputs,
     ArrayInputs,
