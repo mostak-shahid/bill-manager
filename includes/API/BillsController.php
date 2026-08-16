@@ -3206,13 +3206,13 @@ class BillsController
     }
     
     public static function  get_products( WP_REST_Request $request ) {
-        if (!current_user_can('manage_options')) {
-            return new WP_Error(
-                'rest_update_error',
-                'Sorry, you are not allowed to update the DAEXT UI Test options.',
-                array('status' => 403)
-            );
-        }
+        // if (!current_user_can('manage_options')) {
+        //     return new WP_Error(
+        //         'rest_update_error',
+        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
+        //         array('status' => 403)
+        //     );
+        // }
 
         global $wpdb;
         $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
@@ -3225,9 +3225,9 @@ class BillsController
             FROM {$items_table}
         ";
 
-        $results = $wpdb->get_results(
+        $results = $wpdb->get_col(
             $wpdb->prepare( $sql ),
-            ARRAY_A
+            0
         );
 
         return rest_ensure_response(
@@ -3258,9 +3258,9 @@ class BillsController
             FROM {$items_table}
         ";
 
-        $results = $wpdb->get_results(
+        $results = $wpdb->get_col(
             $wpdb->prepare( $sql ),
-            ARRAY_A
+            0
         );
 
         return rest_ensure_response(
