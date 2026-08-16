@@ -398,7 +398,20 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                                 </FloatingLabel>
                             </Col>
                         </Row>
-
+                        <datalist id="products">
+                            {
+                                products.length > 0 && products.map((title, index) =>                                
+                                    <option key={index} value={title}/>
+                                )
+                            }
+                        </datalist>
+                        <datalist id="units">
+                            {
+                                units.length > 0 && units.map((title, index) =>                                
+                                    <option key={index} value={title}/>
+                                )
+                            }
+                        </datalist>
                         <SortableAccordion
                             name='bill_items'
                             options={{
@@ -407,9 +420,9 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
                                 enabler: true,
                             }}
                             fields={[
-                                { type: "input", name: "title", placeholder: __('Title', 'bill-manager'), className: "input-field", label: __('Title', 'bill-manager'), attributes: { 'required': true } },
+                                { type: "input", name: "title", placeholder: __('Title', 'bill-manager'), className: "input-field", label: __('Title', 'bill-manager'), attributes: { 'required': true, 'list': "products" } },
                                 { type: "input", name: "quantity", placeholder: __('Quantity', 'bill-manager'), className: "input-field", label: __('Quantity', 'bill-manager'), attributes: { 'type': 'number', min: 1, 'required': true } },
-                                { type: "input", name: "unit", placeholder: __('Unit', 'bill-manager'), className: "input-field", label: __('Unit', 'bill-manager'), attributes: { 'required': true } },
+                                { type: "input", name: "unit", placeholder: __('Unit', 'bill-manager'), className: "input-field", label: __('Unit', 'bill-manager'), attributes: { 'required': true, 'list': "units"  } },
                                 { type: "input", name: "unit_price", placeholder: __('Unit Price', 'bill-manager'), className: "input-field", label: __('Unit Price', 'bill-manager'), attributes: { 'type': 'number', min: 1, 'required': true } },
                             ]}
                             defaultValues={billItems}

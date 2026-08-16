@@ -86,11 +86,18 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                                         text='light'
                                         style={customCardStyle}
                                     >
-                                        <Card.Header>{__('Balance', 'bill-manager')}</Card.Header>
+                                        <Card.Header>{__('Overview', 'bill-manager')}</Card.Header>
                                         <Card.Body>
                                             <Card.Title>{__('Receivable', 'bill-manager')}</Card.Title>
                                             <Card.Text>
-                                                ৳60,000
+                                                <strong>Purchase</strong> {dataDetailsModal?.purchase}<br/>
+                                                <strong>Purchase Paid</strong> {dataDetailsModal?.purchase_paid}<br/>
+                                                <strong>Payable</strong> {dataDetailsModal?.payable}<br/>
+                                                <strong>Sale</strong> {dataDetailsModal?.sale}<br/>
+                                                <strong>sale Paid</strong> {dataDetailsModal?.sale_paid}<br/>
+                                                <strong>Receivable</strong> {dataDetailsModal?.receivable}<br/>
+                                                <strong>Balance</strong> {dataDetailsModal?.balance}<br/>
+                                                <strong>Balance Type</strong> {dataDetailsModal?.balance_type}<br/>
                                             </Card.Text>
                                         </Card.Body>
                                     </Card>
@@ -189,7 +196,7 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                             </Row>
 
                             <h6 className="h6">{__('Recent Bills', 'bill-manager')}</h6>
-                            <CompanyBills id={1} />
+                            <CompanyBills id={id} />
 
                             {/* <Table striped bordered hover>
                                 <thead>
@@ -230,7 +237,7 @@ export default function ComapnyDetailsModal({ show, setShow, id }) {
                             </Table> */}
 
                             <h6 className="h6">{__('Recent Payments', 'bill-manager')}</h6>
-                            <CompanyPayments id={1} />
+                            <CompanyPayments id={id} />
                             {/* <Table striped bordered hover>
                                 <thead>
                                     <tr>
