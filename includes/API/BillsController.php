@@ -1874,11 +1874,11 @@ class BillsController
         );
 
         $orderby = sanitize_key(
-            $request->get_param( 'orderby' ) ?: 'bill_date'
+            $request->get_param( 'sort_field' ) ?: 'created_at'
         );
 
         $order = strtolower(
-            $request->get_param( 'order' ) ?: 'desc'
+            $request->get_param( 'sort_order' ) ?: 'desc'
         );
 
         $date_from = trim(
@@ -1894,17 +1894,17 @@ class BillsController
         */
         $orderby_map = [
             'id'       => 'b.ID',
+            'company_title'  => 'c.title',
             'bill_no'  => 'b.bill_no',
-            'company'  => 'c.title',
-            'type'     => 'b.bill_type',
+            'bill_type'     => 'b.bill_type',
             'amount'   => 'bill_amount',
             'paid'     => 'paid_amount',
             'balance'  => 'bill_balance',
-            'date'     => 'b.bill_date',
-            'bill_date'=> 'b.bill_date',
+            'payment_status'  => 'payment_status',
+            'created_at'     => 'b.created_at',
         ];
 
-        $orderby_sql = $orderby_map[ $orderby ] ?? 'b.bill_date';
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'b.created_at';
 
         $order_sql = 'asc' === $order ? 'ASC' : 'DESC';
 
@@ -2179,10 +2179,7 @@ class BillsController
                         title,
                         quantity,
                         unit,
-                        unit_price,
-                        discount,
-                        tax,
-                        notes,
+                        unit_price,  
                         created_at,
                         updated_at
                     FROM {$items_table}
@@ -2198,13 +2195,14 @@ class BillsController
 
                 $quantity   = (float) $item['quantity'];
                 $unit_price = (float) $item['unit_price'];
-                $discount   = (float) $item['discount'];
-                $tax        = (float) $item['tax'];
+                // $discount   = (float) $item['discount'];
+                // $tax        = (float) $item['tax'];
 
                 $item_total =
                     ( $quantity * $unit_price )
-                    - $discount
-                    + $tax;
+                    // - $discount
+                    // + $tax
+                    ;
 
                 $item['id'] = (int) $item['id'];
 
@@ -2222,19 +2220,19 @@ class BillsController
                     ''
                 );
 
-                $item['discount'] = number_format(
-                    $discount,
-                    2,
-                    '.',
-                    ''
-                );
+                // $item['discount'] = number_format(
+                //     $discount,
+                //     2,
+                //     '.',
+                //     ''
+                // );
 
-                $item['tax'] = number_format(
-                    $tax,
-                    2,
-                    '.',
-                    ''
-                );
+                // $item['tax'] = number_format(
+                //     $tax,
+                //     2,
+                //     '.',
+                //     ''
+                // );
 
                 $item['total'] = number_format(
                     $item_total,
@@ -2255,16 +2253,17 @@ class BillsController
 
         return rest_ensure_response(
             [
+                'success' => true,
                 'data' => $results,
 
-                'pagination' => [
+                // 'pagination' => [
                     'page'        => $page,
                     'per_page'    => $per_page,
                     'total'       => $total,
                     'total_pages' => $per_page > 0
                         ? (int) ceil( $total / $per_page )
                         : 0,
-                ],
+                // ],
             ]
         );
     }
@@ -2362,9 +2361,6 @@ class BillsController
                     quantity,
                     unit,
                     unit_price,
-                    discount,
-                    tax,
-                    notes,
                     created_at,
                     updated_at
                 FROM {$items_table}
@@ -3207,5 +3203,71 @@ class BillsController
         //         // ],
         //     ]
         // );
+    }
+    
+    public static function  get_products( WP_REST_Request $request ) {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+
+        /*
+        * Get products.
+        */
+        $sql = "
+            SELECT DISTINCT title
+            FROM {$items_table}
+        ";
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare( $sql ),
+            ARRAY_A
+        );
+
+        return rest_ensure_response(
+            [
+                'success' => true,
+                'data' => $results,
+            ]
+        );
+    }
+    
+    public static function  get_units( WP_REST_Request $request ) {
+        // if (!current_user_can('manage_options')) {
+        //     return new WP_Error(
+        //         'rest_update_error',
+        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
+        //         array('status' => 403)
+        //     );
+        // }
+
+        global $wpdb;
+        $items_table     = $wpdb->prefix . 'bill_manager_bill_items';
+
+        /*
+        * Get units.
+        */
+        $sql = "
+            SELECT DISTINCT unit
+            FROM {$items_table}
+        ";
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare( $sql ),
+            ARRAY_A
+        );
+
+        return rest_ensure_response(
+            [
+                'success' => true,
+                'data' => $results,
+            ]
+        );
     }
 }

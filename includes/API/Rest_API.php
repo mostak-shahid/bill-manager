@@ -575,7 +575,7 @@ class Rest_API
             self::NAMESPACE,
             '/company/(?P<id>\d+)/bills',
             [
-                'methods'             => WP_REST_Server::READABLE,
+                'methods'             => WP_REST_Server::READABLE, 
                 'callback'            => [BillsController::class, 'get_company_bills'],
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
@@ -838,6 +838,28 @@ class Rest_API
             [
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [BillsController::class, 'get_payments'],
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+            ]
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/products',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_products'],
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+            ]
+        );
+        register_rest_route(
+            self::NAMESPACE,
+            '/units',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [BillsController::class, 'get_units'],
                 // 'permission_callback' => function () {
                 //     return current_user_can('manage_options');
                 // },

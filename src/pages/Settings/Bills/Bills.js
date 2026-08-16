@@ -136,15 +136,15 @@ export default function Bills() {
     const [showPaymentCreateModal, setShowPaymentCreateModal] = useState(false);
 
     const columns = [
-        // { name: 'ID', id: 'ID', selector: row => row.ID, sortable: true },
-        { name: 'Company', id: 'c.title', selector: row => row.company.title, sortable: true, pinned: 'left' },
+        { name: 'ID', id: 'id', selector: row => row.ID, sortable: true },
+        { name: 'Company', id: 'company_title', selector: row => row.company.title, sortable: true, pinned: 'left' },
         { name: 'Bill No', id: 'bill_no', selector: row => row.bill_no, sortable: true, hide: 'sm' },
         { name: 'Bill Type', id: 'bill_type', selector: row => row.bill_type, sortable: true, hide: 'sm' },
-        { name: 'Amount', id: 'c.email', selector: row => row.amount, sortable: true, hide: 'md', },
-        { name: 'Paid', id: 'c.address', selector: row => row.paid, sortable: true, hide: 'lg', },
-        { name: 'Balance', id: 'c.address', selector: row => row.balance, sortable: true, hide: 'lg', },
-        { name: 'Payment Status', id: 'c.address', selector: row => row.payment_status, sortable: true, hide: 'lg', },
-        { name: 'Created At', id: 'c.address', selector: row => row.created_at, sortable: true, hide: 'lg', },
+        { name: 'Amount', id: 'amount', selector: row => row.amount, sortable: true, hide: 'md', },
+        { name: 'Paid', id: 'paid', selector: row => row.paid, sortable: true, hide: 'lg', },
+        { name: 'Balance', id: 'balance', selector: row => row.balance, sortable: true, hide: 'lg', },
+        { name: 'Payment Status', id: 'payment_status', selector: row => row.payment_status, sortable: true, hide: 'lg', },
+        { name: 'Date', id: 'created_at', selector: row => row.created_at, sortable: true, pinned: 'right' },
 
         // {
         //     name: 'User',

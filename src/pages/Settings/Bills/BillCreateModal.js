@@ -63,6 +63,44 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
         fetchCompanies();
     }, []);
 
+    const [products, setProducts] = useState({});
+    const [loadingProducts, setLoadingProducts] = useState(false);
+    const fetchProducts = async () => {
+        setLoadingProducts(true);
+        try {
+            const response = await apiFetch({
+                path: `/bill-manager/v1/products`,
+            });
+            setProducts(response.data || []);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
+            setLoadingProducts(false);
+        }
+    };
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const [units, setUnits] = useState({});
+    const [loadingUnits, setLoadingUnits] = useState(false);
+    const fetchUnits = async () => {
+        setLoadingUnits(true);
+        try {
+            const response = await apiFetch({
+                path: `/bill-manager/v1/units`,
+            });
+            setUnits(response.data || []);
+        } catch (error) {
+            console.error('Error fetching units:', error);
+        } finally {
+            setLoadingUnits(false);
+        }
+    };
+    useEffect(() => {
+        fetchUnits();
+    }, []);
+
 
     const [showToast, setShowToast] = useState(false);
     const [dataToast, setDataToast] = useState({ title: '', content: '', type: 'success' });
