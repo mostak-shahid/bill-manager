@@ -866,7 +866,29 @@ class Rest_API
             ]
         );
 
-        
+        // Get persons with filters
+        register_rest_route(
+            self::NAMESPACE,
+            '/persons',
+            array(
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => array(BillsController::class, 'get_persons'),
+
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+                'args' => [
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            )
+        );
         // Create Person
         register_rest_route(
             self::NAMESPACE,
@@ -914,6 +936,30 @@ class Rest_API
         );
 
         
+
+        // Get events with filters
+        register_rest_route(
+            self::NAMESPACE,
+            '/events',
+            array(
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => array(BillsController::class, 'get_events'),
+
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
+                'args' => [
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            )
+        );
         // Create Event
         register_rest_route(
             self::NAMESPACE,

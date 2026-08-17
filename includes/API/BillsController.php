@@ -1003,7 +1003,8 @@ class BillsController
         );
     }
 
-    public static function get_company_bills( WP_REST_Request $request ) {
+    public static function get_company_bills( WP_REST_Request $request ) 
+    {
 
         if (!current_user_can('manage_options')) {
             return new WP_Error(
@@ -1311,7 +1312,8 @@ class BillsController
             ]
         );
     }
-    public static function get_company_payments( WP_REST_Request $request ) {
+    public static function get_company_payments( WP_REST_Request $request ) 
+    {
 
         // if (!current_user_can('manage_options')) {
         //     return new WP_Error(
@@ -3270,6 +3272,185 @@ class BillsController
             ]
         );
     }
+    
+
+    /**
+     * Get persons with filtering
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function  get_persons( WP_REST_Request $request ) {
+
+        global $wpdb;
+
+        $persons_table     = $wpdb->prefix . 'bill_manager_contact_persons';
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+
+        $page = max(
+            1,
+            absint( $request->get_param( 'page' ) ?: 1 )
+        );
+
+        $per_page = min(
+            100,
+            max(
+                1,
+                absint( $request->get_param( 'per_page' ) ?: 10 )
+            )
+        );
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        $search = trim(
+            (string) $request->get_param( 'search' )
+        );
+
+        $orderby = sanitize_key(
+            $request->get_param( 'sort_field' ) ?: 'created_at'
+        );
+
+        $order = strtolower(
+            $request->get_param( 'sort_order' ) ?: 'desc'
+        );
+
+        $date_from = trim(
+            (string) $request->get_param( 'date_from' )
+        );
+
+        $date_to = trim(
+            (string) $request->get_param( 'date_to' )
+        );
+
+        /*
+        * Whitelist ORDER BY columns.
+        */
+        $orderby_map = [
+            'id'       => 'p.ID',
+            'title'       => 'p.title',
+            'designation'       => 'p.designation',
+            'phone'       => 'p.phone',
+            'email'       => 'p.email',
+            'company_title'  => 'c.title',
+            'created_at'     => 'p.created_at',
+        ];
+
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'p.created_at';
+
+        $order_sql = 'asc' === $order ? 'ASC' : 'DESC';
+
+        /*
+        * WHERE conditions.
+        */
+        $where  = [ '1=1' ];
+        $params = [];
+
+        if ( $search !== '' ) {
+
+            $search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+            $where[] = '(
+                p.title LIKE %s
+                OR p.designation LIKE %s
+                OR p.phone LIKE %s
+                OR p.email LIKE %s
+                OR c.title LIKE %s
+            )';
+
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+        if ( $date_from !== '' ) {
+
+            $where[]  = 'p.created_at >= %s';
+            $params[] = $date_from . ' 00:00:00';
+        }
+
+        if ( $date_to !== '' ) {
+
+            $where[]  = 'p.created_at <= %s';
+            $params[] = $date_to . ' 23:59:59';
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        /*
+        * Get bills.
+        */
+        $sql = "
+            SELECT
+
+                p.*,
+
+                c.title AS company_title
+
+            FROM {$persons_table} p
+
+            LEFT JOIN {$companies_table} c
+                ON c.ID = p.company_id
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare( $sql, $params ),
+            ARRAY_A
+        );
+
+        /*
+        * Total number of bills.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$persons_table} p
+
+            LEFT JOIN {$companies_table} c
+                ON c.ID = e.company_id
+
+            WHERE {$where_sql}
+        ";
+
+        $count_params = array_slice(
+            $params,
+            0,
+            count( $params ) - 2
+        );
+
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                $count_sql,
+                $count_params
+            )
+        );
+
+        return rest_ensure_response(
+            [
+                'success' => true,
+                'data' => $results,
+
+                // 'pagination' => [
+                    'page'        => $page,
+                    'per_page'    => $per_page,
+                    'total'       => $total,
+                    'total_pages' => $per_page > 0
+                        ? (int) ceil( $total / $per_page )
+                        : 0,
+                // ],
+            ]
+        );
+    }
 
 
 
@@ -3356,8 +3537,185 @@ class BillsController
             200
         );
     }
+    
 
+    /**
+     * Get events with filtering
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function  get_events( WP_REST_Request $request ) {
 
+        global $wpdb;
+
+        $events_table     = $wpdb->prefix . 'bill_manager_events';
+        $companies_table = $wpdb->prefix . 'bill_manager_companies';
+
+        $page = max(
+            1,
+            absint( $request->get_param( 'page' ) ?: 1 )
+        );
+
+        $per_page = min(
+            100,
+            max(
+                1,
+                absint( $request->get_param( 'per_page' ) ?: 10 )
+            )
+        );
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        $search = trim(
+            (string) $request->get_param( 'search' )
+        );
+
+        $type = sanitize_key(
+            $request->get_param( 'type' )
+        );
+
+        $orderby = sanitize_key(
+            $request->get_param( 'sort_field' ) ?: 'created_at'
+        );
+
+        $order = strtolower(
+            $request->get_param( 'sort_order' ) ?: 'desc'
+        );
+
+        $date_from = trim(
+            (string) $request->get_param( 'date_from' )
+        );
+
+        $date_to = trim(
+            (string) $request->get_param( 'date_to' )
+        );
+
+        /*
+        * Whitelist ORDER BY columns.
+        */
+        $orderby_map = [
+            'id'       => 'e.ID',
+            'company_title'  => 'c.title',
+            'date'  => 'e.date',
+            'type'     => 'e.type',
+            'created_at'     => 'e.created_at',
+        ];
+
+        $orderby_sql = $orderby_map[ $orderby ] ?? 'e.created_at';
+
+        $order_sql = 'asc' === $order ? 'ASC' : 'DESC';
+
+        /*
+        * WHERE conditions.
+        */
+        $where  = [ '1=1' ];
+        $params = [];
+
+        if ( $search !== '' ) {
+
+            $search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+            $where[] = '(
+                e.type LIKE %s
+                OR e.date LIKE %s
+                OR e.details LIKE %s
+                OR c.title LIKE %s
+            )';
+
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+            $params[] = $search_like;
+        }
+
+        if ( $date_from !== '' ) {
+
+            $where[]  = 'e.date >= %s';
+            $params[] = $date_from . ' 00:00:00';
+        }
+
+        if ( $date_to !== '' ) {
+
+            $where[]  = 'e.date <= %s';
+            $params[] = $date_to . ' 23:59:59';
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        /*
+        * Get bills.
+        */
+        $sql = "
+            SELECT
+
+                e.*,
+
+                c.title AS company_title
+
+            FROM {$events_table} e
+
+            LEFT JOIN {$companies_table} c
+                ON c.ID = e.company_id
+
+            WHERE {$where_sql}
+
+            ORDER BY {$orderby_sql} {$order_sql}
+
+            LIMIT %d OFFSET %d
+        ";
+
+        $params[] = $per_page;
+        $params[] = $offset;
+
+        $results = $wpdb->get_results(
+            $wpdb->prepare( $sql, $params ),
+            ARRAY_A
+        );
+
+        /*
+        * Total number of bills.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$events_table} e
+
+            LEFT JOIN {$companies_table} c
+                ON c.ID = e.company_id
+
+            WHERE {$where_sql}
+        ";
+
+        $count_params = array_slice(
+            $params,
+            0,
+            count( $params ) - 2
+        );
+
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                $count_sql,
+                $count_params
+            )
+        );
+
+        return rest_ensure_response(
+            [
+                'success' => true,
+                'data' => $results,
+
+                // 'pagination' => [
+                    'page'        => $page,
+                    'per_page'    => $per_page,
+                    'total'       => $total,
+                    'total_pages' => $per_page > 0
+                        ? (int) ceil( $total / $per_page )
+                        : 0,
+                // ],
+            ]
+        );
+    }
 
     /**
      * Create Event
@@ -3438,4 +3796,5 @@ class BillsController
             200
         );
     }
+    
 }

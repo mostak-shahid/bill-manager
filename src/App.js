@@ -15,7 +15,7 @@ import { useWindowWidth, setNestedValue } from './lib/Helpers'
 import menuItems from './data/menu.json';
 import { getMenu } from './data/menu.js';
 
-import { Dashboard, Settings, Companies, Bills, Payments, SingleCompany, ImportExport, Feedback, FreeVsPro, Tools, LogsTable } from './pages';
+import { Dashboard, Settings, Companies, Bills, Payments, Events, Persons, SingleCompany, ImportExport, Feedback, FreeVsPro, Tools, LogsTable } from './pages';
 import NotFound from './NotFound'
 
 import {
@@ -474,6 +474,8 @@ export default function App() {
                         <Route path="companies" element={<Companies />} />
                         <Route path="bills" element={<Bills />} />
                         <Route path="payments" element={<Payments />} />
+                        <Route path="events" element={<Events />} />
+                        <Route path="persons" element={<Persons />} />
                         <Route path="companies/:id" element={<SingleCompany />} />
                         <Route path="inputs/basic_inputs" element={<BasicInputs />} />
                         <Route path="inputs/array_inputs" element={<ArrayInputs />} />

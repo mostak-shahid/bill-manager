@@ -3,6 +3,8 @@ import Settings from './Settings/Settings';
 import Companies from './Settings/Companies/Companies';
 import Bills from './Settings/Bills/Bills';
 import Payments from './Settings/Payments/Payments';
+import Events from './Settings/Events/Events';
+import Persons from './Settings/Persons/Persons';
 import SingleCompany from './Settings/Companies/SingleCompany';
 import BasicInputs from './Settings/BasicInputs';
 
@@ -33,6 +35,8 @@ export {
     Companies,
     Bills,
     Payments,
+    Events,
+    Persons,
     SingleCompany,
     BasicInputs,
     ArrayInputs,

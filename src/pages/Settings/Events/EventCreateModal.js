@@ -81,6 +81,9 @@ export default function EventCreateModal({ show, setShow, setReloadTable }) {
                 if (result.success) {
                     setValidated(false);
                     setCompanyId('');
+                    setDate('');
+                    setType('');
+                    setDetails('');
 
                     setDataToast({
                         title: __("Success", "bill-manager"),

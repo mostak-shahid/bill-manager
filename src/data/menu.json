@@ -16,7 +16,19 @@
         "text": "Payments",
         "description": "Share feedback, report issues, or suggest improvements.",
         "url": "/settings/payments"
-    },   
+    },    
+    {
+        "itemKey": "events",
+        "text": "Events",
+        "description": "Share feedback, report issues, or suggest improvements.",
+        "url": "/settings/events"
+    },    
+    {
+        "itemKey": "persons",
+        "text": "Contact Persons",
+        "description": "Share feedback, report issues, or suggest improvements.",
+        "url": "/settings/persons"
+    }, 
     { "itemKey": "inputs", "text": "Inputs", "url": "/settings/companies/",
         "items": [            
             {
