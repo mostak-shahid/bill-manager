@@ -223,6 +223,57 @@ class Activator
 			KEY user_id (user_id)
 		) $charset_collate;";
 		dbDelta($payments_sql);
+		
+		$contact_persons_table = $wpdb->prefix . 'bill_manager_contact_persons';
+		$contact_persons_sql = "CREATE TABLE $contact_persons_table (
+			ID bigint(20) NOT NULL AUTO_INCREMENT,
+
+			user_id bigint(20) NOT NULL,
+			ip varchar(45) NOT NULL,
+			user_agent text NOT NULL,
+
+			company_id bigint(20) unsigned NOT NULL,
+			
+			title varchar(255) NULL,
+			designation varchar(255) NULL,
+			phone varchar(255) NOT NULL,
+			email varchar(255) NOT NULL,
+
+			notes text NULL,
+
+			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+			PRIMARY KEY (ID),
+
+			KEY company_id (company_id),
+			KEY user_id (user_id)
+		) $charset_collate;";
+		dbDelta($contact_persons_sql);
+		
+		$events_table = $wpdb->prefix . 'bill_manager_events';
+		$events_sql = "CREATE TABLE $events_table (
+			ID bigint(20) NOT NULL AUTO_INCREMENT,
+
+			user_id bigint(20) NOT NULL,
+			ip varchar(45) NOT NULL,
+			user_agent text NOT NULL,
+
+			company_id bigint(20) unsigned NOT NULL,
+			
+			date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			type varchar(255) NULL,
+			details text NULL,
+
+			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+			PRIMARY KEY (ID),
+
+			KEY company_id (company_id),
+			KEY user_id (user_id)
+		) $charset_collate;";
+		dbDelta($events_sql);
 	}
 }
 

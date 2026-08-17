@@ -865,6 +865,90 @@ class Rest_API
                 // },
             ]
         );
+
+        
+        // Create Person
+        register_rest_route(
+            self::NAMESPACE,
+            '/person',
+            [
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [BillsController::class, 'create_person'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'company_id'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+
+                    'title'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'designation' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'phone' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'email'   => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'notes' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
+                    ),
+                ),
+            ]
+        );
+
+        
+        // Create Event
+        register_rest_route(
+            self::NAMESPACE,
+            '/event',
+            [
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [BillsController::class, 'create_event'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'company_id'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+
+                    'date'   => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'type' => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                    'details' => array(
+                        'required'          => false,
+                        'type'              => 'string',
+                        'sanitize_callback' => 'sanitize_textarea_field',
+                    ),
+                ),
+            ]
+        );
     }
     // callback for settings theme endpoints
     public function rest_set_settings_theme(WP_REST_Request $request)

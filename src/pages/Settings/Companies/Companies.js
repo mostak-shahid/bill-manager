@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { useOutletContext } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Row, Col, Form, Button, Badge, Modal, Table, OverlayTrigger } from 'react-bootstrap';
+import { Row, Col, Form, Button, Badge, Modal, Table, OverlayTrigger, Dropdown } from 'react-bootstrap';
 import { Popover } from '@wordpress/components';
 
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
@@ -16,6 +16,10 @@ import { ToastControl } from "../../../components";
 import CompanyCreateModal from "./CompanyCreateModal";
 import ComapnyDetailsModal from "./ComapnyDetailsModal";
 import ComapnyEditModal from "./ComapnyEditModal";
+import EventCreateModal from "../Events/EventCreateModal";
+import PersonCreateModal from "../Persons/PersonCreateModal";
+import BillCreateModal from "../Bills/BillCreateModal";
+import PaymentCreateModal from "../Payments/PaymentCreateModal";
 
 const pathPrefix = 'admin.php?page=bill-manager#'; // Adjust this if your app is served from a different base path
 const timeFilterOptions = [
@@ -39,7 +43,7 @@ const ExpandedComponent = ({ data }) => (
         <p><strong>User Email:</strong> {data.user_email}</p>
         <p><strong>User Agent:</strong> {data.user_agent}</p>
         <p><strong>User IP:</strong> {data.ip}</p>
-        
+
         <p className="show-on-lg"><strong>Company Address:</strong> {data.address}</p>
         <p className="show-on-md"><strong>Company Email :</strong> {data.email}</p>
         <p className="show-on-sm"><strong>Company Phone:</strong> {data.phone}</p>
@@ -301,7 +305,7 @@ const Companies = () => {
         // { name: 'IP Address', id: 'ip', selector: row => row.ip, sortable: true, omit: true },
         // // { name: 'Description', id: 'description', selector: row => row.description, sortable: true, omit: true },
         // { name: 'User Agent', id: 'user_agent', selector: row => row.user_agent, sortable: true, omit: true },
-        { name: 'Added', id: 'c.created_at', selector: row => row.created_at, sortable: true, hide: 'sm'},
+        { name: 'Added', id: 'c.created_at', selector: row => row.created_at, sortable: true, hide: 'sm' },
         {
             name: 'Action',
             cell: (row) => (
@@ -379,10 +383,14 @@ const Companies = () => {
         },
     ];
 
+    const [showPersonModal, setShowPersonModal] = useState(false);
+    const [showEventModal, setShowEventModal] = useState(false);
+    const [showBillModal, setShowBillModal] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
     return (
         <>
             <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
-                <div className="text-center text-lg-start order-1 order-lg-0" style={{width: '100%', maxWidth: 350}}>
+                <div className="text-center text-lg-start order-1 order-lg-0" style={{ width: '100%', maxWidth: 350 }}>
                     <div className="mt-1 mt-lg-3">
                         <div className="d-flex justify-content-center justify-content-lg-start align-items-start gap-2" style={{ height: 38 }}>
                             {timeFilterOptions.map(({ value, label }) => (
@@ -398,21 +406,27 @@ const Companies = () => {
                         </div>
                     </div>
                 </div>
-                <div className="text-center text-lg-end order-0 order-lg-1" style={{width: '100%', maxWidth: 350}}>
+                <div className="text-center text-lg-end order-0 order-lg-1" style={{ width: '100%', maxWidth: 350 }}>
                     <div className="mt-1 mt-lg-3">
-                        <Button
-                            variant="outline-primary"
-                            onClick={() => setShowCreateModal(true)}
-                        >
-                            {__('Add New', 'bill-manager')}
-                        </Button>
+                        <Dropdown>
+                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
+                                {__('Actions', 'bill-manager')}
+                            </Dropdown.Toggle>
 
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={() => setShowCreateModal(true)}>{__('Add Company', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowPersonModal(true)}>{__('Add Persion', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowEventModal(true)}>{__('Add Event', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowBillModal(true)}>{__('Add Bill', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowPaymentModal(true)}>{__('Add Payment', 'bill-manager')}</Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </div>
                 </div>
             </div>
 
             <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
-                <div className="text-center text-lg-start" style={{width: '100%', maxWidth: 350}}>                    
+                <div className="text-center text-lg-start" style={{ width: '100%', maxWidth: 350 }}>
                     <Form.Group className="mt-1 mt-lg-3">
                         <div className="d-flex align-items-stretch gap-2">
                             <Form.Select
@@ -437,7 +451,7 @@ const Companies = () => {
                         </div>
                     </Form.Group>
                 </div>
-                <div className="text-center text-lg-end" style={{width: '100%', maxWidth: 350}}>
+                <div className="text-center text-lg-end" style={{ width: '100%', maxWidth: 350 }}>
                     <Form.Group className="mt-1 mt-lg-3">
                         <div className="d-flex align-items-stretch gap-2">
                             <Form.Control
@@ -515,6 +529,12 @@ const Companies = () => {
                 <ComapnyDetailsModal show={showDetailsModal} setShow={setShowDetailsModal} id={dataDetailsModalID} /> : ''
             }
             <CompanyCreateModal show={showCreateModal} setShow={setShowCreateModal} setReloadTable={setReloadTable} />
+            <PersonCreateModal show={showPersonModal} setShow={setShowPersonModal} setReloadTable={setReloadTable} />
+            <EventCreateModal show={showEventModal} setShow={setShowEventModal} setReloadTable={setReloadTable} />
+
+            <BillCreateModal show={showBillModal} setShow={setShowBillModal} setReloadTable={setReloadTable} />
+            <PaymentCreateModal show={showPaymentModal} setShow={setShowPaymentModal} setReloadTable={setReloadTable} />
+
 
             <ToastControl
                 show={showToast}

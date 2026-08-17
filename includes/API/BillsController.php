@@ -3270,4 +3270,172 @@ class BillsController
             ]
         );
     }
+
+
+
+    /**
+     * Create person
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function create_person(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+        $payments_table = $wpdb->prefix . 'bill_manager_contact_persons';
+
+        $user_id        = get_current_user_id();
+        $ip             = Utils::get_client_ip();
+        $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+
+
+        $company_id     = sanitize_text_field(wp_unslash($request->get_param('company_id')));
+        $title      = sanitize_text_field(wp_unslash($request->get_param('title')));
+        $designation      = sanitize_text_field(wp_unslash($request->get_param('designation')));
+        $phone      = sanitize_text_field(wp_unslash($request->get_param('phone')));
+        $email      = sanitize_text_field(wp_unslash($request->get_param('email')));
+        $notes      = sanitize_textarea_field(wp_unslash($request->get_param('notes')));
+
+        $insert = $wpdb->insert(
+            $payments_table,
+            [
+                'user_id'       => $user_id,
+                'ip'            => $ip,
+                'user_agent'    => $user_agent,
+
+                'company_id'       => $company_id,
+                'title'  => $title,
+                'designation'   => $designation,
+                'phone'       => $phone,
+                'email'  => $email,
+                'notes'         => $notes,
+
+                'created_at'    => current_time('mysql'),
+                'updated_at'    => current_time('mysql'),
+            ],
+            // ['%d', '%s', '%s', '%d', '%s', '%f', '%s', '%s', '%s', '%s']
+        );
+
+        // $wpdb->insert() returns false on failure, or the number of rows affected on success.
+        if ($insert === false) {
+            return new WP_Error(
+                'rest_insert_error',
+                'An error occurred while saving the payment. Please try again.',
+                array(
+                    'status'   => 500,
+                    'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
+                )
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => 'Payment created successfully.',
+                'data'    => [
+                    'id'            => $wpdb->insert_id,
+                    'user_id'       => $user_id,
+                    'ip'            => $ip,
+                    'user_agent'    => $user_agent,
+                    'company_id'       => $company_id,
+                    'title'  => $title,
+                    'designation'   => $designation,
+                    'phone'       => $phone,
+                    'email'  => $email,
+                    'notes'         => $notes,
+                ],
+            ),
+            200
+        );
+    }
+
+
+
+    /**
+     * Create Event
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function create_event(WP_REST_Request $request)
+    {
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_update_error',
+                'Sorry, you are not allowed to update the DAEXT UI Test options.',
+                array('status' => 403)
+            );
+        }
+
+        global $wpdb;
+        $payments_table = $wpdb->prefix . 'bill_manager_events';
+
+        $user_id        = get_current_user_id();
+        $ip             = Utils::get_client_ip();
+        $user_agent     = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+
+
+        $company_id     = sanitize_text_field(wp_unslash($request->get_param('company_id')));
+        $date      = sanitize_text_field(wp_unslash($request->get_param('date')));
+        $type      = sanitize_text_field(wp_unslash($request->get_param('type')));
+        
+        $details      = sanitize_textarea_field(wp_unslash($request->get_param('details')));
+
+        $insert = $wpdb->insert(
+            $payments_table,
+            [
+                'user_id'       => $user_id,
+                'ip'            => $ip,
+                'user_agent'    => $user_agent,
+
+                'company_id'       => $company_id,
+                'date'  => $date,
+                'type'   => $type,
+                
+                'details'         => $details,
+
+                'created_at'    => current_time('mysql'),
+                'updated_at'    => current_time('mysql'),
+            ],
+            // ['%d', '%s', '%s', '%d', '%s', '%f', '%s', '%s', '%s', '%s']
+        );
+
+        // $wpdb->insert() returns false on failure, or the number of rows affected on success.
+        if ($insert === false) {
+            return new WP_Error(
+                'rest_insert_error',
+                'An error occurred while saving the payment. Please try again.',
+                array(
+                    'status'   => 500,
+                    'db_error' => $wpdb->last_error, // remove/guard this in production if you don't want to expose raw DB errors
+                )
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => 'Payment created successfully.',
+                'data'    => [
+                    'id'            => $wpdb->insert_id,
+                    'user_id'       => $user_id,
+                    'ip'            => $ip,
+                    'user_agent'    => $user_agent,
+                    'company_id'       => $company_id,
+                    'date'  => $date,
+                    'type'   => $type,                    
+                    'details'         => $details,
+                ],
+            ),
+            200
+        );
+    }
 }
