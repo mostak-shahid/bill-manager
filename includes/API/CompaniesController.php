@@ -1641,7 +1641,7 @@ class CompaniesController
             FROM {$persons_table} p
 
             LEFT JOIN {$companies_table} c
-                ON c.ID = e.company_id
+                ON c.ID = p.company_id
 
             WHERE {$where_sql}
         ";

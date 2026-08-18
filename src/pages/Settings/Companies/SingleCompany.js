@@ -11,6 +11,9 @@ export default function SingleCompany() {
     const [company, setCompany] = useState([]);
     const [bills, setBills] = useState([]);
     const [payments, setPayments] = useState([]);
+    const [persons, setPersons] = useState([]);
+    const [events, setEvents] = useState([]);
+
     const [loading, setLoading] = useState(false);
     const [key, setKey] = useState('home');
 
@@ -44,7 +47,7 @@ export default function SingleCompany() {
             setLoading(true);
             try {
                 // Execute all API requests concurrently
-                const [companyRes, billsRes, paymentsRes] = await Promise.all([
+                const [companyRes, billsRes, paymentsRes, personsRes, eventsRes] = await Promise.all([
                     apiFetch({
                         path: `/bill-manager/v1/company/${id}`,
                         method: 'GET'
@@ -56,6 +59,14 @@ export default function SingleCompany() {
                     apiFetch({
                         path: `/bill-manager/v1/company/${id}/payments?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC`,
                         method: 'GET'
+                    }),
+                    apiFetch({
+                        path: `/bill-manager/v1/company/${id}/persons?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC`,
+                        method: 'GET'
+                    }),
+                    apiFetch({
+                        path: `/bill-manager/v1/company/${id}/events?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC`,
+                        method: 'GET'
                     })
                 ]);
 
@@ -63,6 +74,8 @@ export default function SingleCompany() {
                 setCompany(companyRes?.data);
                 setBills(billsRes?.data);
                 setPayments(paymentsRes?.data);
+                setPersons(personsRes?.data);
+                setEvents(eventsRes?.data);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -209,6 +222,60 @@ export default function SingleCompany() {
                                                     <td>{payment.amount}</td>
                                                     <td>{payment.paid_by}</td>
                                                     <td>{payment.date}</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </Table>
+                                </>: ''
+                            }
+                            {persons.length ?
+                                <>
+                                    <h6 className="h6">{__('Contact Persons', 'bill-manager')} (<small><span role="button" onClick={() => setKey('persons')}>{__('View All', 'bill-manager')}</span></small>)</h6>
+                                    <Table striped bordered hover responsive>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{__('Name', 'bill-manager')}</th>
+                                                <th>{__('Designation', 'bill-manager')}</th>
+                                                <th>{__('Phone', 'bill-manager')}</th>                                                
+                                                <th>{__('Email', 'bill-manager')}</th>
+                                                <th>{__('Added', 'bill-manager')}</th>                                                        
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {persons.map((person, index) =>
+                                                <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{person.title}</td>
+                                                    <td>{person.designation}</td>
+                                                    <td>{person.phone}</td>
+                                                    <td>{person.email}</td>
+                                                    <td>{person.created_at}</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </Table>
+                                </>: ''
+                            }
+                            {events.length ?
+                                <>
+                                    <h6 className="h6">{__('Events', 'bill-manager')} (<small><span role="button" onClick={() => setKey('events')}>{__('View All', 'bill-manager')}</span></small>)</h6>
+                                    <Table striped bordered hover responsive>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{__('Date', 'bill-manager')}</th>
+                                                <th>{__('Type', 'bill-manager')}</th>
+                                                <th>{__('details', 'bill-manager')}</th>                                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {events.map((event, index) =>
+                                                <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{event.date}</td>
+                                                    <td>{event.type}</td>
+                                                    <td>{event.details}</td>
                                                 </tr>
                                             )}
                                         </tbody>
