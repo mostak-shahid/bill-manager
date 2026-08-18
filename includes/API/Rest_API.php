@@ -6,6 +6,7 @@ if (! defined('ABSPATH')) exit;
 
 use MosPress\BillManager\API\LogsController;
 use MosPress\BillManager\API\BillsController;
+use MosPress\BillManager\API\CompaniesController;
 use MosPress\BillManager\Helpers\Utils;
 use WP_Error;
 use WP_REST_Request;
@@ -47,6 +48,8 @@ class Rest_API
         $this->register_feedback_endpoints();
         $this->register_options_endpoints();
         $this->register_logs_endpoints();
+
+        $this->register_companies_endpoints();
         $this->register_bills_endpoints();
     }
 
@@ -342,18 +345,18 @@ class Rest_API
             )
         );
     }
+
     /**
-     * Register logs endpoints
+     * Register companies endpoints
      */
-    private function register_bills_endpoints()
-    {
+    private function register_companies_endpoints() {
         // Create Company
         register_rest_route(
             self::NAMESPACE,
             '/companies',
             [
                 'methods'             => WP_REST_Server::CREATABLE,
-                'callback'            => [BillsController::class, 'create_company'],
+                'callback'            => [CompaniesController::class, 'create_company'],
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -395,13 +398,13 @@ class Rest_API
             ]
         );
 
-        // All companies
+        // Get company list
         register_rest_route(
             self::NAMESPACE,
-            '/all-companies',
+            '/companies/list',
             [
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => [BillsController::class, 'all_companies'],
+                'callback'            => [CompaniesController::class, 'list_companies'],
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -411,36 +414,13 @@ class Rest_API
         // Get companies with filters
         register_rest_route(
             self::NAMESPACE,
-            '/companies',
+            '/companies/',
             [
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => [BillsController::class, 'get_companies'],
+                'callback'            => [CompaniesController::class, 'get_companies'],
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
-                'args' => [
-                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
-                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
-                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
-                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
-                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
-                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
-                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
-                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
-                ],
-            ]
-        );
-
-        // Get companies with filters
-        register_rest_route(
-            self::NAMESPACE,
-            '/companies/with-transactions',
-            [
-                'methods'             => WP_REST_Server::READABLE,
-                'callback'            => [BillsController::class, 'get_companies_with_transactions'],
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
                 'args' => [
                     'page' => ['sanitize_callback' => 'absint', 'default' => 1],
                     'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
@@ -460,7 +440,7 @@ class Rest_API
             '/company/(?P<id>\d+)',
             [
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => [BillsController::class, 'get_company'],
+                'callback'            => [CompaniesController::class, 'get_company'],
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -482,7 +462,7 @@ class Rest_API
             '/company/(?P<id>\d+)', 
             [
                 'methods'             => WP_REST_Server::EDITABLE, // Identical to 'PUT, PATCH'
-                'callback'            => array(BillsController::class, 'update_company'), // Replace with your actual class name
+                'callback'            => array(CompaniesController::class, 'update_company'), // Replace with your actual class name
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -537,7 +517,7 @@ class Rest_API
             '/company/(?P<id>\d+)',
             array(
                 'methods'             => WP_REST_Server::DELETABLE,
-                'callback'            => array(BillsController::class, 'delete_company'),
+                'callback'            => array(CompaniesController::class, 'delete_company'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -556,7 +536,7 @@ class Rest_API
             '/companies/bulk-delete',
             array(
                 'methods'             => WP_REST_Server::DELETABLE,
-                'callback'            => array(BillsController::class, 'bulk_delete_companies'),
+                'callback'            => array(CompaniesController::class, 'bulk_delete_companies'),
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -576,7 +556,7 @@ class Rest_API
             '/company/(?P<id>\d+)/bills',
             [
                 'methods'             => WP_REST_Server::READABLE, 
-                'callback'            => [BillsController::class, 'get_company_bills'],
+                'callback'            => [CompaniesController::class, 'get_company_bills'],
                 'permission_callback' => function () {
                     return current_user_can('manage_options');
                 },
@@ -607,10 +587,10 @@ class Rest_API
             '/company/(?P<id>\d+)/payments',
             [
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => [BillsController::class, 'get_company_payments'],
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'callback'            => [CompaniesController::class, 'get_company_payments'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
                 'args' => [
                     'id' => [
                         'required'          => true,
@@ -632,8 +612,74 @@ class Rest_API
             ]
         );
 
-        
+        // Get company persons by company ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/company/(?P<id>\d+)/persons',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [CompaniesController::class, 'get_company_persons'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args' => [
+                    'id' => [
+                        'required'          => true,
+                        'validate_callback' => function ($param, $request, $key) {
+                            return is_numeric($param) && (int) $param > 0;
+                        },
+                        'sanitize_callback' => 'absint',
+                    ],
 
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            ]
+        );
+
+        // Get company events by company ID
+        register_rest_route(
+            self::NAMESPACE,
+            '/company/(?P<id>\d+)/events',
+            [
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [CompaniesController::class, 'get_company_events'],
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args' => [
+                    'id' => [
+                        'required'          => true,
+                        'validate_callback' => function ($param, $request, $key) {
+                            return is_numeric($param) && (int) $param > 0;
+                        },
+                        'sanitize_callback' => 'absint',
+                    ],
+
+                    'page' => ['sanitize_callback' => 'absint', 'default' => 1],
+                    'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
+                    'search' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'filter' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_field' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'sort_order' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                    'date_to' => ['sanitize_callback' => 'sanitize_text_field'],
+                ],
+            ]
+        );
+    }
+
+    /**
+     * Register logs endpoints
+     */
+    private function register_bills_endpoints()
+    {
         // All bills
         register_rest_route(
             self::NAMESPACE,
@@ -735,9 +781,9 @@ class Rest_API
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => array(BillsController::class, 'get_bills'),
 
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
                 'args' => [
                     'page' => ['sanitize_callback' => 'absint', 'default' => 1],
                     'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
@@ -758,9 +804,9 @@ class Rest_API
             [
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [BillsController::class, 'get_bill'],
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
                 'args'                => [
                     'id' => [
                         'required'          => true,
@@ -838,9 +884,9 @@ class Rest_API
             [
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [BillsController::class, 'get_payments'],
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
             ]
         );
         register_rest_route(
@@ -849,9 +895,9 @@ class Rest_API
             [
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [BillsController::class, 'get_products'],
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
             ]
         );
         register_rest_route(
@@ -860,9 +906,9 @@ class Rest_API
             [
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [BillsController::class, 'get_units'],
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
             ]
         );
 
@@ -874,9 +920,9 @@ class Rest_API
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => array(BillsController::class, 'get_persons'),
 
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
                 'args' => [
                     'page' => ['sanitize_callback' => 'absint', 'default' => 1],
                     'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],
@@ -945,9 +991,9 @@ class Rest_API
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => array(BillsController::class, 'get_events'),
 
-                // 'permission_callback' => function () {
-                //     return current_user_can('manage_options');
-                // },
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
                 'args' => [
                     'page' => ['sanitize_callback' => 'absint', 'default' => 1],
                     'per_page' => ['sanitize_callback' => 'absint', 'default' => 5],

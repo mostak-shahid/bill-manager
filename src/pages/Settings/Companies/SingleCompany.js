@@ -2,126 +2,257 @@ import { __ } from "@wordpress/i18n";
 import { useState, useEffect, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { useParams } from "react-router-dom";
-import { useWindowWidth } from '../../../lib/Helpers';
-import '../Logs/ResponsiveTable.css';
-import { ToastControl } from "../../../components";
+import { Nav, Tabs, Tab, Row, Col, Card, Spinner, Table } from 'react-bootstrap';
+import CompanyBills from "./CompanyBills";
+import CompanyPayments from "./CompanyPayments";
 export default function SingleCompany() {
     // The key names must match the route path parameter (:id)
     const { id } = useParams();
-    // Add this inside your component
-    const containerRef = useRef(null);
-
-    const width = useWindowWidth();
-    // const hasHiddenColumns = width <= 1279; 
-    const hasHiddenColumns = true;
     const [company, setCompany] = useState([]);
-    const [data, setData] = useState([]);
+    const [bills, setBills] = useState([]);
+    const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [processing, setProcessing] = useState(false);
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [total, setTotal] = useState(0);
-    const [search, setSearch] = useState('');
-    const [filter, setFilter] = useState('any');
-    const [dateRange, setDateRange] = useState([]);
-    const [sortField, setSortField] = useState('created_at');
-    const [sortOrder, setSortOrder] = useState('DESC');
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [selectedRowIDs, setSelectedRowIDs] = useState([]);
-    const [bulkAction, setBulkAction] = useState('any');
-    const [reloadTable, setReloadTable] = useState(0);
+    const [key, setKey] = useState('home');
 
-    const [deleting, setDeletinging] = useState(false);
+    // useEffect(() => {
+    //     const fetchAllData = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const params = new URLSearchParams({
+    //                 id
+    //             });
+    //             const result = await apiFetch({
+    //                 path: `/bill-manager/v1/company/${id}`,
+    //                 // /bill-manager/v1/company/${id}/bills?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC
+    //                 // /bill-manager/v1/company/${id}/payments?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC
+    //                 method: 'GET'
+    //             });
+    //             setCompany(result?.data);
+    //             setBills(result?.data);
+    //             setPayments(result?.data);
+    //         } catch (error) {
+    //             console.error('Error fetching companies:', error);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchAllData();
+    // }, []);
 
     useEffect(() => {
-        const fetchCompany = async () => {
+        const fetchAllData = async () => {
             setLoading(true);
             try {
-                const params = new URLSearchParams({
-                    id
-                });
-                const result = await apiFetch({
-                    // path: `/bill-manager/v1/company?${params.toString()}`,
-                    path: `/bill-manager/v1/company/${id}`,
-                    method: 'GET'
-                });
-                setCompany(result?.data);
+                // Execute all API requests concurrently
+                const [companyRes, billsRes, paymentsRes] = await Promise.all([
+                    apiFetch({
+                        path: `/bill-manager/v1/company/${id}`,
+                        method: 'GET'
+                    }),
+                    apiFetch({
+                        path: `/bill-manager/v1/company/${id}/bills?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC`,
+                        method: 'GET'
+                    }),
+                    apiFetch({
+                        path: `/bill-manager/v1/company/${id}/payments?page=1&per_page=10&search=&filter=any&sort_field=created_at&sort_order=DESC`,
+                        method: 'GET'
+                    })
+                ]);
+
+                // Assign the correct specific response data to each state
+                setCompany(companyRes?.data);
+                setBills(billsRes?.data);
+                setPayments(paymentsRes?.data);
+
             } catch (error) {
-                console.error('Error fetching companies:', error);
+                console.error('Error fetching data:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchCompany();
-    }, []);
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams({
-                page,
-                per_page: pageSize,
-                search: search,
-                filter,
-                sort_field: sortField,
-                sort_order: sortOrder,
-            });
+        // Add id to dependencies if it's dynamic
+        fetchAllData();
+    }, [id]);
 
-            if (dateRange && dateRange.length === 2) {
-                const formatDate = (date) => {
-                    const d = new Date(date);
-                    const year = d.getFullYear();
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    return `${year}-${month}-${day}`;
-                };
-                const startDate = formatDate(dateRange[0]);
-                const endDate = formatDate(dateRange[1]);
-                // console.log('Adding date range:', startDate, endDate);
-                params.append('date_from', startDate);
-                params.append('date_to', endDate);
-            }
 
-            const queryString = params.toString();
-            // console.log('Fetching companies with params:', queryString);
 
-            const response = await apiFetch({
-                path: `/bill-manager/v1/companies?${queryString}`,
-            });
-            setData(response.data || []);
-            setTotal(response.total || 0);
-        } catch (error) {
-            console.error('Error fetching companies:', error);
-        } finally {
-            setLoading(false);
-        }
+    const customCardStyle = {
+        width: '100%',
+        padding: '0px',
+        margin: '0px',
+        maxWidth: 'unset',
+        minHeight: '100%',
     };
-
-
-    useEffect(() => {
-        // fetchData();
-    }, [
-        page,
-        pageSize,
-        search,
-        filter,
-        dateRange,
-        sortField,
-        sortOrder,
-        reloadTable,
-    ]);
-
     return (
-        !loading &&  
-        <div className="single-company">
-            <div className="text-center">
-                <h2 className="title">{company?.title}</h2>
-                <div className="phone">{company.phone}</div>
-                <div className="email">{company.email}</div>
-                <div className="address">{company.address}</div>
-            </div>
-            Orders will be shown below
-            <p>Now viewing details for Company ID: <strong>{id}</strong></p>
-        </div>
+        loading ? (
+            <>
+                <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                /> {__('Loading...', 'bill-manager')}
+            </>
+        ) : (
+            <>
+                <Tabs
+                    id="controlled-tab-example"
+                    activeKey={key}
+                    onSelect={(k) => setKey(k)}
+                    className="mt-3"
+                >
+                    <Tab eventKey="home" title="Home">
+                        <>
+                            <Row className="align-items-stretch">
+                                <Col lg={8} md={6} className="mb-3">
+                                    <Card
+                                        // bg={variant.toLowerCase()}
+                                        bg='light'
+                                        // key={variant}
+                                        // text={variant.toLowerCase() === 'light' ? 'dark' : 'white'}
+                                        text='dark'
+                                        style={customCardStyle}
+                                    // className="mb-2"
+                                    >
+                                        <Card.Header>{__('Company Information', 'bill-manager')}</Card.Header>
+                                        <Card.Body>
+                                            <Card.Title>{company?.title}</Card.Title>
+                                            <Card.Text>
+                                                <ul className="list-unstyled">
+                                                    {/* <li>{__('Title', 'bill-manager')}: {company?.title}</li> */}
+                                                    <li>{__('Phone', 'bill-manager')}: {company?.phone}</li>
+                                                    <li>{__('Email', 'bill-manager')}: {company?.email}</li>
+                                                    <li>{__('Address', 'bill-manager')}: {company?.address}</li>
+                                                    <li>{__('Note', 'bill-manager')}: {company?.notes}</li>
+                                                </ul>
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col lg={4} md={6} className="mb-3">
+                                    <Card
+                                        bg='light'
+                                        text='dark'
+                                        style={customCardStyle}
+                                    >
+                                        <Card.Header>{__('Overview', 'bill-manager')}</Card.Header>
+                                        <Card.Body>
+                                            <Card.Title>{__('Receivable', 'bill-manager')}</Card.Title>
+                                            <Card.Text>
+                                                <strong>{__('Purchases', 'bill-manager')}</strong> {company?.purchase}<br />
+                                                <strong>{__('Paid', 'bill-manager')}</strong> {company?.purchase_paid}<br />
+                                                <strong>{__('Payable', 'bill-manager')}</strong> {company?.payable}<br />
+                                                <strong>{__('Total Sales', 'bill-manager')}</strong> {company?.sale}<br />
+                                                <strong>{__('Received', 'bill-manager')}</strong> {company?.sale_paid}<br />
+                                                <strong>{__('Receivable', 'bill-manager')}</strong> {company?.receivable}<br />
+                                                <strong>{__('Balance', 'bill-manager')}</strong> {company?.balance}<br />
+                                                <strong>{__('Balance Type', 'bill-manager')}</strong> {company?.balance_type}<br />
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+                            {bills.length ?
+                                <>
+                                    <h6 className="h6">{__('Recent Bills', 'bill-manager')} (<small><span role="button" onClick={() => setKey('bills')}>{__('View All', 'bill-manager')}</span></small>)</h6>
+                                    <Table striped bordered hover responsive>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{__('Bill No', 'bill-manager')}</th>
+                                                <th>{__('Amount', 'bill-manager')}</th>
+                                                <th>{__('Type', 'bill-manager')}</th>
+                                                <th>{__('Paid', 'bill-manager')}</th>                                                
+                                                <th>{__('Status', 'bill-manager')}</th>                                                
+                                                <th>{__('Date', 'bill-manager')}</th>                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {bills.map((bill, index) =>
+                                                <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{bill.bill_no}</td>
+                                                    <td>{bill.amount}</td>
+                                                    <td>{bill.type}</td>
+                                                    <td>{bill.paid}</td>
+                                                    <td>{bill.status}</td>
+                                                    <td>{bill.date}</td>
+                                                </tr>
+                                            
+                                            )}
+                                        </tbody>
+                                    </Table>
+                                </>: ''
+                            }
+                            {payments.length ?
+                                <>
+                                    <h6 className="h6">{__('Recent Payments', 'bill-manager')} (<small><span role="button" onClick={() => setKey('payments')}>{__('View All', 'bill-manager')}</span></small>)</h6>
+                                    <Table striped bordered hover responsive>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{__('Bill No', 'bill-manager')}</th>
+                                                <th>{__('Type', 'bill-manager')}</th>
+                                                <th>{__('Paid', 'bill-manager')}</th>                                                
+                                                <th>{__('Paid By', 'bill-manager')}</th>
+                                                <th>{__('Date', 'bill-manager')}</th>                                                        
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {payments.map((payment, index) =>
+                                                <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{payment.bill_no}</td>
+                                                    <td>{payment.type}</td>
+                                                    <td>{payment.amount}</td>
+                                                    <td>{payment.paid_by}</td>
+                                                    <td>{payment.date}</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </Table>
+                                </>: ''
+                            }
+                            <Card
+                                // bg={variant.toLowerCase()}
+                                bg='light'
+                                // key={variant}
+                                // text={variant.toLowerCase() === 'light' ? 'dark' : 'white'}
+                                text='dark'
+                                style={customCardStyle}
+                            // className="mb-2"
+                            >
+                                <Card.Header>{__('Added By', 'bill-manager')}</Card.Header>
+                                <Card.Body>
+                                    <Card.Title>{company?.user_display_name} ({company?.user_id})</Card.Title>
+                                    <Card.Text>
+                                        <ul className="list-unstyled">
+                                            <li>{__('User Email', 'bill-manager')}: {company?.user_email}</li>
+                                            <li>{__('User IP', 'bill-manager')}: {company?.ip}</li>
+                                            <li>{__('User Details', 'bill-manager')}: {company?.user_agent}</li>
+                                            <li>{__('Added', 'bill-manager')}: {company?.created_at}</li>
+                                        </ul>
+                                    </Card.Text>
+                                </Card.Body>
+                            </Card>
+                        </>
+                    </Tab>
+                    <Tab eventKey="bills" title="Bills">
+                        <CompanyBills id={id} />
+                    </Tab>
+                    <Tab eventKey="payments" title="Payments">
+                        <CompanyPayments id={id} />
+                    </Tab>
+                    <Tab eventKey="persons" title="Contact Persons">
+                        Company contact persons
+                    </Tab>
+                    <Tab eventKey="events" title="Events">
+                        Company contact events
+                    </Tab>
+                </Tabs>
+            </>
+        )
     )
 }

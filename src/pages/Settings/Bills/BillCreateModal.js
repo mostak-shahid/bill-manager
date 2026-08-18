@@ -50,7 +50,7 @@ export default function BillCreateModal({ show, setShow, setReloadTable }) {
         setLoading(true);
         try {
             const response = await apiFetch({
-                path: `/bill-manager/v1/all-companies`,
+                path: `/bill-manager/v1/companies/list`,
             });
             setCompanies(response.data || []);
         } catch (error) {

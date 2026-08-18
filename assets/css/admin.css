@@ -96,6 +96,16 @@
   content: "\f223";
   cursor: help;
 }
+.bill-manager-settings-template .nav-tabs .nav-item {
+  margin-bottom: 0;
+}
+.bill-manager-settings-template .tab-content .tab-pane {
+  border: 1px solid var(--bs-border-color);
+  border-top-style: none;
+  border-bottom-left-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+  padding: 0.5rem 1rem;
+}
 
 .loading-skeleton {
   background: linear-gradient(45deg, #e0e0e0 25%, #f8f8f8 50%, #e0e0e0 75%);

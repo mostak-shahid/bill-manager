@@ -125,7 +125,7 @@ const Companies = () => {
             // console.log('Fetching companies with params:', queryString);
 
             const response = await apiFetch({
-                path: `/bill-manager/v1/companies/with-transactions?${queryString}`,
+                path: `/bill-manager/v1/companies/?${queryString}`,
             });
             setData(response.data || []);
             setTotal(response.total || 0);
@@ -311,17 +311,17 @@ const Companies = () => {
             cell: (row) => (
                 <div className="d-flex gap-1 position-relative">
                     {/* <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button> */}
-                    {/* <Button
+                    <Button
                         variant="info"
                         size="sm"
                         as={Link}
                         to={`/settings/companies/${row.ID}`}
-                        target="_blank"
+                        // target="_blank"
                         rel="noopener noreferrer"
                         >
                         <FaEye />
-                    </Button> */}
-                    <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button>
+                    </Button>
+                    {/* <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button> */}
                     <Button variant="warning" size="sm" onClick={() => modalEditShow(row)}><FaEdit /></Button>
                     <DeleteButton id={row.ID} onDelete={handleDelete} />
                 </div>

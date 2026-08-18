@@ -11,7 +11,7 @@ import { useWindowWidth } from '../../../lib/Helpers';
 import '../Logs/ResponsiveTable.css';
 import { ToastControl } from "../../../components";
 
-export default function CompanyPayments({ id = 0 }) {
+export default function CompanyPersons({ id = 0 }) {
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -59,7 +59,7 @@ export default function CompanyPayments({ id = 0 }) {
             // console.log('Fetching companies with params:', queryString);
 
             const response = await apiFetch({
-                path: `/bill-manager/v1/company/${id}/payments?${queryString}`,
+                path: `/bill-manager/v1/company/${id}/persons?${queryString}`,
             });
             setData(response.data || []);
             setTotal(response.total || 0);
@@ -86,26 +86,27 @@ export default function CompanyPayments({ id = 0 }) {
     ]);
 
     const columns = [
-        // { name: '#', id: 'id', selector: row => row.ID, sortable: true },
-        // { name: 'Company', id: 'c.title', selector: row => row.company, sortable: false },
-        { name: 'Bill No', id: 'bill_no', selector: row => row.bill_no, sortable: true, pinned: 'left' },
+        { name: '#', id: 'id', selector: row => row.ID, sortable: true },
+        // { name: 'Company', id: 'c.title', selector: row => row.company, sortable: false, pinned: 'left' },
+        { name: 'Bill No', id: 'bill_no', selector: row => row.bill_no, sortable: true, hide: 'sm' },
+        { name: 'Amount', id: 'b.amount', selector: row => row.amount, sortable: true, hide: 'sm' },
         { name: 'Type', id: 'type', selector: row => row.type, sortable: true, hide: 'sm' },
-        { name: 'Paid', id: 'amount', selector: row => row.amount, sortable: true, hide: 'md', },
-        { name: 'Paid By', id: 'paid_by', selector: row => row.paid_by, sortable: true, hide: 'md', },
+        { name: 'Paid', id: 'paid_amount', selector: row => row.paid, sortable: true, hide: 'md', },
+        { name: 'Status', id: 'status', selector: row => row.status, sortable: true, hide: 'md', },
         { name: 'Date', id: 'date', selector: row => row.date, sortable: true, hide: 'md', },
     ];
     /*
     {
-{
-    "id": 1,
-    "payment_id": "PAY-00001",
+    "ID": "1",
     "bill_no": "bill-xyz123abc",
     "company": "ABC Company",
     "type": "Purchase",
-    "amount": "50000.00",
-    "paid_by": "",
-    "date": "2026-08-10 00:00:00"
-}
+    "balance": "50040.00",
+    "status": "Over Paid",
+    "date": "2026-08-10 00:00:00",
+    "id": 0,
+    "amount": "-40.00",
+    "paid": "50000.00"
 }
     */
     return (
@@ -117,36 +118,36 @@ export default function CompanyPayments({ id = 0 }) {
                     // keyField="ID"
                     columns={columns}
                     data={data}
-                    // selectableRows
-                    // selectedRows={selectedRowKeys}
-                    // // onSelectedRowsChange={({ selectedRows }) => setSelectedRowKeys(selectedRows)}
-                    // onSelectedRowsChange={({ selectedRows }) => {
-                    //     const rows = selectedRows;
-                    //     const keys = selectedRows.map(row => row.ID);
-                    //     setSelectedRowKeys(rows);
-                    //     setSelectedRowIDs(keys);
-                    // }}
-                    // pagination
-                    // highlightOnHover
-                    // // dense
+                // selectableRows
+                // selectedRows={selectedRowKeys}
+                // // onSelectedRowsChange={({ selectedRows }) => setSelectedRowKeys(selectedRows)}
+                // onSelectedRowsChange={({ selectedRows }) => {
+                //     const rows = selectedRows;
+                //     const keys = selectedRows.map(row => row.ID);
+                //     setSelectedRowKeys(rows);
+                //     setSelectedRowIDs(keys);
+                // }}
+                // pagination
+                // highlightOnHover
+                // // dense
 
-                    // paginationServer
-                    // paginationTotalRows={total}
-                    // onChangePage={(page) => setPage(page)}
-                    // sortServer
-                    // onSort={(column, sortDirection) => {
-                    //     // setSortField(column.id.toLowerCase().replace(' ', ''));
-                    //     setSortField(column.id);
-                    //     setSortOrder(sortDirection);
-                    // }}
+                // paginationServer
+                // paginationTotalRows={total}
+                // onChangePage={(page) => setPage(page)}
+                // sortServer
+                // onSort={(column, sortDirection) => {
+                //     // setSortField(column.id.toLowerCase().replace(' ', ''));
+                //     setSortField(column.id);
+                //     setSortOrder(sortDirection);
+                // }}
 
-                    // expandableRows={hasHiddenColumns} // Turns off the expander logic entirely if on desktop
-                    // expandableRowDisabled={row => !hasHiddenColumns} // Hides the ">" arrow icon dynamically per row
-                    // expandableRowsComponent={ExpandedComponent}
-                    // responsive
-                    // resizable
-                    // conditionalRowStyles={conditionalRowStyles}
-                    // customStyles={customStyles}
+                // expandableRows={hasHiddenColumns} // Turns off the expander logic entirely if on desktop
+                // expandableRowDisabled={row => !hasHiddenColumns} // Hides the ">" arrow icon dynamically per row
+                // expandableRowsComponent={ExpandedComponent}
+                // responsive
+                // resizable
+                // conditionalRowStyles={conditionalRowStyles}
+                // customStyles={customStyles}
                 />
                 </>
             )}

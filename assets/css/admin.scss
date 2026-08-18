@@ -117,6 +117,20 @@
             cursor: help;
         }
     }
+    .nav-tabs {
+        .nav-item {
+            margin-bottom: 0;
+        }
+    }
+    .tab-content {
+        .tab-pane {
+            border: 1px solid var(--bs-border-color);
+            border-top-style: none;
+            border-bottom-left-radius: var(--bs-border-radius);
+            border-bottom-right-radius: var(--bs-border-radius);
+            padding: 0.5rem 1rem;
+        }
+    }
 }
 
 .loading-skeleton {

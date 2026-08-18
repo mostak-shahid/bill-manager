@@ -25,7 +25,7 @@ export default function PersonCreateModal({ show, setShow, setReloadTable }) {
         setLoadingCompanies(true);
         try {
             const response = await apiFetch({
-                path: `/bill-manager/v1/all-companies`,
+                path: `/bill-manager/v1/companies/list`,
             });
             setCompanies(response.data || []);
         } catch (error) {
