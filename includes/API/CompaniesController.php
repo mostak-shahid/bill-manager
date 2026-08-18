@@ -971,13 +971,13 @@ class CompaniesController
     public static function get_company_bills( WP_REST_Request $request ) 
     {
 
-        if (!current_user_can('manage_options')) {
-            return new WP_Error(
-                'rest_update_error',
-                'Sorry, you are not allowed to update the DAEXT UI Test options.',
-                array('status' => 403)
-            );
-        }
+        // if (!current_user_can('manage_options')) {
+        //     return new WP_Error(
+        //         'rest_update_error',
+        //         'Sorry, you are not allowed to update the DAEXT UI Test options.',
+        //         array('status' => 403)
+        //     );
+        // }
 
         global $wpdb;
 
@@ -992,8 +992,8 @@ class CompaniesController
         $offset = ( $page - 1 ) * $per_page;
 
         $search    = trim( (string) $request->get_param( 'search' ) );
-        $orderby   = sanitize_key( $request->get_param( 'orderby' ) ?: 'date' );
-        $order     = strtolower( $request->get_param( 'order' ) ?: 'desc' );
+        $orderby   = sanitize_key( $request->get_param( 'sort_field' ) ?: 'date' );
+        $order     = strtolower( $request->get_param( 'sort_order' ) ?: 'desc' );
 
         $date_from = trim( (string) $request->get_param( 'date_from' ) );
         $date_to   = trim( (string) $request->get_param( 'date_to' ) );
@@ -1035,8 +1035,7 @@ class CompaniesController
 
             $where[] = '(
                 b.bill_no LIKE %s
-                OR b.reference_no LIKE %s
-                OR c.title LIKE %s
+                OR b.bill_type LIKE %s
             )';
 
             $search_like = '%' . $wpdb->esc_like( $search ) . '%';
@@ -1062,6 +1061,22 @@ class CompaniesController
         }
 
         $where_sql = implode( ' AND ', $where );
+
+
+
+        /*
+        * Total records.
+        */
+        $count_sql = "
+            SELECT COUNT(*)
+
+            FROM {$bills_table} b
+
+            INNER JOIN {$companies_table} c
+                ON c.ID = b.company_id
+
+            WHERE {$where_sql}
+        ";
 
         /*
         * Main query.
@@ -1199,25 +1214,6 @@ class CompaniesController
 
         $prepared_sql = $wpdb->prepare( $sql, $params );
 
-        $results = $wpdb->get_results(
-            $prepared_sql,
-            ARRAY_A
-        );
-
-        /*
-        * Total records.
-        */
-        $count_sql = "
-            SELECT COUNT(*)
-
-            FROM {$bills_table} b
-
-            INNER JOIN {$companies_table} c
-                ON c.ID = b.company_id
-
-            WHERE {$where_sql}
-        ";
-
         /*
         * Remove LIMIT/OFFSET parameters.
         */
@@ -1232,6 +1228,11 @@ class CompaniesController
                 $count_sql,
                 $count_params
             )
+        );
+
+        $results = $wpdb->get_results(
+            $prepared_sql,
+            ARRAY_A
         );
 
         foreach ( $results as &$row ) {
@@ -1267,6 +1268,7 @@ class CompaniesController
         return rest_ensure_response(
             [
                 'success'    => true,
+                'sql' => $wpdb->last_query,
                 'data' => $results,
                 'page'        => $page,
                 'per_page'    => $per_page,

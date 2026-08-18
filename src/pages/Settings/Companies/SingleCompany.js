@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { Nav, Tabs, Tab, Row, Col, Card, Spinner, Table } from 'react-bootstrap';
 import CompanyBills from "./CompanyBills";
 import CompanyPayments from "./CompanyPayments";
+import CompanyPersons from "./CompanyPersons";
 export default function SingleCompany() {
     // The key names must match the route path parameter (:id)
     const { id } = useParams();
@@ -313,7 +314,7 @@ export default function SingleCompany() {
                         <CompanyPayments id={id} />
                     </Tab>
                     <Tab eventKey="persons" title="Contact Persons">
-                        Company contact persons
+                        <CompanyPersons id={id} />
                     </Tab>
                     <Tab eventKey="events" title="Events">
                         Company contact events

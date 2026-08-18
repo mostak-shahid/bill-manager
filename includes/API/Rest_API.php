@@ -557,9 +557,9 @@ class Rest_API
             [
                 'methods'             => WP_REST_Server::READABLE, 
                 'callback'            => [CompaniesController::class, 'get_company_bills'],
-                'permission_callback' => function () {
-                    return current_user_can('manage_options');
-                },
+                // 'permission_callback' => function () {
+                //     return current_user_can('manage_options');
+                // },
                 'args' => [
                     'id' => [
                         'required'          => true,
@@ -817,6 +817,27 @@ class Rest_API
                     ],
                 ],
             ]
+        );
+
+
+        // Bulk Delete bills
+        register_rest_route(
+            self::NAMESPACE,
+            '/bills/bulk-delete',
+            array(
+                'methods'             => WP_REST_Server::DELETABLE,
+                'callback'            => array(BillsController::class, 'bulk_delete_bills'),
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
+                'args'                => array(
+                    'ids' => array(
+                        'required'          => true,
+                        'type'     => 'array',
+                        'items'    => array('type' => 'integer'),
+                    ),
+                ),
+            )
         );
 
         
