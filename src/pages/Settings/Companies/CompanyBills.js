@@ -145,6 +145,29 @@ export default function CompanyBills({ id = 0 }) {
         { name: 'Paid', id: 'paid', selector: row => row.paid, sortable: true, hide: 'md', },
         { name: 'Status', id: 'status', selector: row => row.status, sortable: true, hide: 'md', },
         { name: 'Date', id: 'date', selector: row => row.date, sortable: true, hide: 'md', },
+                {
+                    name: 'Action',
+                    cell: (row) => (
+                        <div className="d-flex gap-1 position-relative">
+                            {/* <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button> */}
+                            {/* <Button
+                                variant="info"
+                                size="sm"
+                                as={Link}
+                                to={`/settings/companies/${row.ID}`}
+                                // target="_blank"
+                                rel="noopener noreferrer"
+                                >
+                                <FaEye />
+                            </Button> */}
+                            {/* <Button variant="info" size="sm" onClick={() => modalDetailsShow(row)}><FaEye /></Button> */}
+                            <Button variant="warning" size="sm" onClick={() => modalEditShow(row)}><FaEdit /></Button>
+                            {/* <DeleteButton id={row.ID} onDelete={handleDelete} /> */}
+                        </div>
+                    ),
+                    ignoreRowClick: true,
+                    pinned: 'right'
+                },
     ];
 
 
@@ -233,129 +256,125 @@ export default function CompanyBills({ id = 0 }) {
     }
     return (
         <>
-            {!loading && (
-                <>
-                    <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
-                        <div className="text-center text-lg-start order-1 order-lg-0" style={{ width: '100%', maxWidth: 350 }}>
-                            <div className="mt-1 mt-lg-3">
-                                <div className="d-flex justify-content-center justify-content-lg-start align-items-start gap-2" style={{ height: 38 }}>
-                                    {timeFilterOptions.map(({ value, label }) => (
-                                        <Badge
-                                            bg={value == filter ? "dark" : "secondary"}
-                                            // text={value == filter ? "light" : "dark"}
-                                            onClick={() => setFilter(value)}
-                                            role="button"
+            <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
+                <div className="text-center text-lg-start order-1 order-lg-0" style={{ width: '100%', maxWidth: 350 }}>
+                    <div className="mt-1 mt-lg-3">
+                        <div className="d-flex justify-content-center justify-content-lg-start align-items-start gap-2" style={{ height: 38 }}>
+                            {timeFilterOptions.map(({ value, label }) => (
+                                <Badge
+                                    bg={value == filter ? "dark" : "secondary"}
+                                    // text={value == filter ? "light" : "dark"}
+                                    onClick={() => setFilter(value)}
+                                    role="button"
+                                >
+                                    {label}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                <div className="text-center text-lg-end order-0 order-lg-1" style={{ width: '100%', maxWidth: 350 }}>
+                    <div className="mt-1 mt-lg-3">
+                        <Dropdown>
+                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
+                                {__('Actions', 'bill-manager')}
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={() => setShowCreateModal(true)}>{__('Add Company', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowPersonModal(true)}>{__('Add Persion', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowEventModal(true)}>{__('Add Event', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowBillModal(true)}>{__('Add Bill', 'bill-manager')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowPaymentModal(true)}>{__('Add Payment', 'bill-manager')}</Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </div>
+                </div>
+            </div>
+
+            <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
+                <div className="text-center text-lg-start" style={{ width: '100%', maxWidth: 350 }}>
+                    <Form.Group className="mt-1 mt-lg-3">
+                        <div className="d-flex align-items-stretch gap-2">
+                            <Form.Select
+                                value={bulkAction}
+                                onChange={(e) => setBulkAction(e.target.value)}
+                            >
+                                {
+                                    bulkActions.map(({ value, label }) => (
+                                        <option
+                                            value={value}
                                         >
                                             {label}
-                                        </Badge>
+                                        </option>
                                     ))}
-                                </div>
-                            </div>
+                            </Form.Select>
+                            <Button
+                                variant="outline-secondary"
+                                onClick={handleBulkAction}
+                            >
+                                {__('Apply', 'bill-manager')}
+                            </Button>
                         </div>
-                        <div className="text-center text-lg-end order-0 order-lg-1" style={{ width: '100%', maxWidth: 350 }}>
-                            <div className="mt-1 mt-lg-3">
-                                <Dropdown>
-                                    <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
-                                        {__('Actions', 'bill-manager')}
-                                    </Dropdown.Toggle>
-
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item onClick={() => setShowCreateModal(true)}>{__('Add Company', 'bill-manager')}</Dropdown.Item>
-                                        <Dropdown.Item onClick={() => setShowPersonModal(true)}>{__('Add Persion', 'bill-manager')}</Dropdown.Item>
-                                        <Dropdown.Item onClick={() => setShowEventModal(true)}>{__('Add Event', 'bill-manager')}</Dropdown.Item>
-                                        <Dropdown.Item onClick={() => setShowBillModal(true)}>{__('Add Bill', 'bill-manager')}</Dropdown.Item>
-                                        <Dropdown.Item onClick={() => setShowPaymentModal(true)}>{__('Add Payment', 'bill-manager')}</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </div>
+                    </Form.Group>
+                </div>
+                <div className="text-center text-lg-end" style={{ width: '100%', maxWidth: 350 }}>
+                    <Form.Group className="mt-1 mt-lg-3">
+                        <div className="d-flex align-items-stretch gap-2">
+                            <Form.Control
+                                type="search"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                            <Button
+                                variant="outline-secondary"
+                            >
+                                {__('Search', 'bill-manager')}
+                            </Button>
                         </div>
-                    </div>
 
-                    <div className="d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center gap-3">
-                        <div className="text-center text-lg-start" style={{ width: '100%', maxWidth: 350 }}>
-                            <Form.Group className="mt-1 mt-lg-3">
-                                <div className="d-flex align-items-stretch gap-2">
-                                    <Form.Select
-                                        value={bulkAction}
-                                        onChange={(e) => setBulkAction(e.target.value)}
-                                    >
-                                        {
-                                            bulkActions.map(({ value, label }) => (
-                                                <option
-                                                    value={value}
-                                                >
-                                                    {label}
-                                                </option>
-                                            ))}
-                                    </Form.Select>
-                                    <Button
-                                        variant="outline-secondary"
-                                        onClick={handleBulkAction}
-                                    >
-                                        {__('Apply', 'bill-manager')}
-                                    </Button>
-                                </div>
-                            </Form.Group>
-                        </div>
-                        <div className="text-center text-lg-end" style={{ width: '100%', maxWidth: 350 }}>
-                            <Form.Group className="mt-1 mt-lg-3">
-                                <div className="d-flex align-items-stretch gap-2">
-                                    <Form.Control
-                                        type="search"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                    />
-                                    <Button
-                                        variant="outline-secondary"
-                                    >
-                                        {__('Search', 'bill-manager')}
-                                    </Button>
-                                </div>
+                    </Form.Group>
+                </div>
+            </div>
 
-                            </Form.Group>
-                        </div>
-                    </div>
+            <div ref={containerRef} className="table-wrapper responsive-table-wrapper border mt-3">
+                <DataTable
+                    keyField="ID"
+                    columns={columns}
+                    data={data}
+                    selectableRows
+                    selectedRows={selectedRowKeys}
+                    // onSelectedRowsChange={({ selectedRows }) => setSelectedRowKeys(selectedRows)}
+                    onSelectedRowsChange={({ selectedRows }) => {
+                        const rows = selectedRows;
+                        const keys = selectedRows.map(row => row.ID);
+                        setSelectedRowKeys(rows);
+                        setSelectedRowIDs(keys);
+                    }}
+                    pagination
+                    highlightOnHover
+                    // dense
 
-                    <div ref={containerRef} className="table-wrapper responsive-table-wrapper border mt-3">
-                        <DataTable
-                            keyField="ID"
-                            columns={columns}
-                            data={data}
-                            selectableRows
-                            selectedRows={selectedRowKeys}
-                            // onSelectedRowsChange={({ selectedRows }) => setSelectedRowKeys(selectedRows)}
-                            onSelectedRowsChange={({ selectedRows }) => {
-                                const rows = selectedRows;
-                                const keys = selectedRows.map(row => row.ID);
-                                setSelectedRowKeys(rows);
-                                setSelectedRowIDs(keys);
-                            }}
-                            pagination
-                            highlightOnHover
-                            // dense
+                    paginationServer
+                    paginationTotalRows={total}
+                    onChangePage={(page) => setPage(page)}
+                    sortServer
+                    onSort={(column, sortDirection) => {
+                        // setSortField(column.id.toLowerCase().replace(' ', ''));
+                        setSortField(column.id);
+                        setSortOrder(sortDirection);
+                    }}
 
-                            paginationServer
-                            paginationTotalRows={total}
-                            onChangePage={(page) => setPage(page)}
-                            sortServer
-                            onSort={(column, sortDirection) => {
-                                // setSortField(column.id.toLowerCase().replace(' ', ''));
-                                setSortField(column.id);
-                                setSortOrder(sortDirection);
-                            }}
+                    expandableRows={hasHiddenColumns} // Turns off the expander logic entirely if on desktop
+                    expandableRowDisabled={row => !hasHiddenColumns} // Hides the ">" arrow icon dynamically per row
+                    expandableRowsComponent={ExpandedComponent}
+                    responsive
+                    resizable
+                    conditionalRowStyles={conditionalRowStyles}
+                // customStyles={customStyles}
+                />
 
-                            expandableRows={hasHiddenColumns} // Turns off the expander logic entirely if on desktop
-                            expandableRowDisabled={row => !hasHiddenColumns} // Hides the ">" arrow icon dynamically per row
-                            expandableRowsComponent={ExpandedComponent}
-                            responsive
-                            resizable
-                            conditionalRowStyles={conditionalRowStyles}
-                        // customStyles={customStyles}
-                        />
-
-                    </div>
-                </>
-            )}
+            </div>
 
             <Modal size="sm" centered show={showDeleteModal} onHide={modalDeleteClose}>
                 <Modal.Body>

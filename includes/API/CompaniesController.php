@@ -1015,7 +1015,7 @@ class CompaniesController
             'amount'   => 'bill_total',
             'paid'     => 'paid_amount',
             'balance'  => 'balance',
-            'status'   => 'status_order',
+            'status'   => 'status',
             'date'     => 'b.bill_date',
         ];
 
@@ -1040,7 +1040,6 @@ class CompaniesController
 
             $search_like = '%' . $wpdb->esc_like( $search ) . '%';
 
-            $params[] = $search_like;
             $params[] = $search_like;
             $params[] = $search_like;
         }
